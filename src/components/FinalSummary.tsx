@@ -48,17 +48,17 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
         
         {/* Status & Score Info */}
         <div className="flex-1 text-center md:text-left">
-          {/* Pass/Fail Status */}
+          {/* Pass/Fail Status - theme-aware colors */}
           <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
             {result.passed ? (
               <>
-                <CheckCircle className="w-7 h-7 text-volt-mint" />
-                <h2 className="text-2xl font-bold text-volt-mint">PASSED</h2>
+                <CheckCircle className="w-7 h-7" style={{ color: 'var(--success-text)' }} />
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--success-text)' }}>PASSED</h2>
               </>
             ) : (
               <>
-                <XCircle className="w-7 h-7 text-international-orange" />
-                <h2 className="text-2xl font-bold text-international-orange">NEEDS WORK</h2>
+                <XCircle className="w-7 h-7" style={{ color: 'var(--warning-text)' }} />
+                <h2 className="text-2xl font-bold" style={{ color: 'var(--warning-text)' }}>NEEDS WORK</h2>
               </>
             )}
           </div>
@@ -69,7 +69,7 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
               {result.baseScore} / {result.baseMaxScore} points ({result.basePercentage}%)
             </p>
             {hasBonusScore && (
-              <p className="text-volt-mint flex items-center justify-center md:justify-start gap-2 text-sm">
+              <p className="flex items-center justify-center md:justify-start gap-2 text-sm font-medium" style={{ color: 'var(--success-text)' }}>
                 <Zap className="w-4 h-4" />
                 +{result.bonusScore.toFixed(1)} traction bonus
               </p>
@@ -128,8 +128,8 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
           className="mb-6 p-4 rounded-xl bg-gradient-to-r from-volt-mint/10 to-transparent border border-volt-mint/20"
         >
           <div className="flex items-center gap-2 mb-3">
-            <TrendingUp className="w-5 h-5 text-volt-mint" />
-            <h3 className="text-lg font-semibold text-volt-mint">Real Traction Detected</h3>
+            <TrendingUp className="w-5 h-5" style={{ color: 'var(--success-text)' }} />
+            <h3 className="text-lg font-semibold" style={{ color: 'var(--success-text)' }}>Real Traction Detected</h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {result.traction.map((t, i) => (
