@@ -175,18 +175,50 @@ export default function Home() {
     pdf.text('Business Brainlift Grading Report', pageWidth / 2, y, { align: 'center' });
     y += 15;
 
-    // Score
+    // Base Score
     pdf.setFontSize(16);
     pdf.setTextColor(0, 0, 0);
-    pdf.text(`Overall Score: ${gradingResult.totalScore}/${gradingResult.maxScore} (${gradingResult.percentage}%)`, 20, y);
-    y += 10;
+    pdf.text(`Base Score: ${gradingResult.baseScore}/${gradingResult.baseMaxScore} (${gradingResult.basePercentage}%)`, 20, y);
+    y += 8;
+    
+    // Bonus if any
+    if (gradingResult.bonusScore > 0) {
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 204, 130); // Volt mint
+      pdf.text(`Traction Bonus: +${gradingResult.bonusScore.toFixed(1)} points`, 20, y);
+      y += 6;
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Total Score: ${gradingResult.totalScore.toFixed(1)} (${gradingResult.percentage}%)`, 20, y);
+      y += 8;
+    }
 
     // Status
     pdf.setFontSize(14);
-    const statusColor = gradingResult.passed ? [0, 255, 163] : [255, 79, 0];
+    const statusColor = gradingResult.passed ? [0, 204, 130] : [255, 79, 0];
     pdf.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
     pdf.text(gradingResult.passed ? 'PASSED' : 'NEEDS WORK', 20, y);
-    y += 15;
+    y += 12;
+
+    // Traction Evidence
+    if (gradingResult.traction && gradingResult.traction.length > 0) {
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 204, 130);
+      pdf.text('Traction Evidence:', 20, y);
+      y += 7;
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 0, 0);
+      gradingResult.traction.forEach(t => {
+        const text = `• ${t.type}: ${t.description}${t.verified ? ' ✓' : ''}`;
+        const lines = pdf.splitTextToSize(text, pageWidth - 40);
+        if (y + lines.length * 5 > pdf.internal.pageSize.getHeight() - 20) {
+          pdf.addPage();
+          y = 20;
+        }
+        pdf.text(lines, 20, y);
+        y += lines.length * 5;
+      });
+      y += 5;
+    }
 
     // Analysis
     pdf.setFontSize(12);
@@ -228,7 +260,7 @@ export default function Home() {
       y += 6;
       pdf.setFontSize(10);
       pdf.setTextColor(0, 0, 0);
-      pdf.text(`Score: ${section.totalScore}/${section.totalMax}`, 20, y);
+      pdf.text(`Score: ${section.totalScore.toFixed(1)}/${section.totalMax}`, 20, y);
       y += 5;
       const sectionAnalysis = pdf.splitTextToSize(section.analysis, pageWidth - 40);
       pdf.text(sectionAnalysis, 20, y);
@@ -243,13 +275,39 @@ export default function Home() {
 
     let md = `# Business Brainlift Grading Report\n\n`;
     md += `**Date:** ${new Date(gradingResult.timestamp).toLocaleString()}\n\n`;
-    md += `## Overall Score: ${gradingResult.totalScore}/${gradingResult.maxScore} (${gradingResult.percentage}%)\n\n`;
+    md += `## Base Score: ${gradingResult.baseScore}/${gradingResult.baseMaxScore} (${gradingResult.basePercentage}%)\n\n`;
+    
+    if (gradingResult.bonusScore > 0) {
+      md += `**Traction Bonus:** +${gradingResult.bonusScore.toFixed(1)} points\n`;
+      md += `**Total Score:** ${gradingResult.totalScore.toFixed(1)} points (${gradingResult.percentage}%)\n\n`;
+    }
+    
     md += `**Status:** ${gradingResult.passed ? '✅ PASSED' : '❌ NEEDS WORK'}\n\n`;
 
     md += `### Score Breakdown\n`;
-    md += `- Thoroughness: ${gradingResult.sections.reduce((sum, s) => sum + s.thoroughnessScore, 0)}/30\n`;
-    md += `- Viability: ${gradingResult.sections.reduce((sum, s) => sum + s.viabilityScore, 0)}/30\n`;
-    md += `- Executability: ${gradingResult.sections.reduce((sum, s) => sum + s.executabilityScore, 0)}/40\n\n`;
+    md += `- Thoroughness: ${gradingResult.sections.reduce((sum, s) => sum + s.thoroughnessScore, 0).toFixed(1)}/30\n`;
+    md += `- Viability: ${gradingResult.sections.reduce((sum, s) => sum + s.viabilityScore, 0).toFixed(1)}/30\n`;
+    md += `- Executability: ${gradingResult.sections.reduce((sum, s) => sum + s.executabilityScore, 0).toFixed(1)}/40\n\n`;
+
+    // Traction evidence
+    if (gradingResult.traction && gradingResult.traction.length > 0) {
+      md += `## Traction Evidence\n`;
+      gradingResult.traction.forEach(t => {
+        md += `- **${t.type}**: ${t.description}${t.verified ? ' ✓' : ''}\n`;
+      });
+      md += '\n';
+    }
+
+    // Milestone progress
+    if (gradingResult.milestones && gradingResult.milestones.some(m => m.earnedBonus > 0)) {
+      md += `## Milestone Progress\n`;
+      gradingResult.milestones.forEach(m => {
+        if (m.earnedBonus > 0) {
+          md += `- ${m.label}: +${m.earnedBonus.toFixed(1)} (${m.progressPercent}% progress)\n`;
+        }
+      });
+      md += '\n';
+    }
 
     md += `## Overall Analysis\n${gradingResult.overallAnalysis}\n\n`;
 
@@ -264,7 +322,7 @@ export default function Home() {
     md += `## Section Details\n\n`;
     gradingResult.sections.forEach(section => {
       md += `### ${section.sectionTitle}\n`;
-      md += `**Score:** ${section.totalScore}/${section.totalMax}\n\n`;
+      md += `**Score:** ${section.totalScore.toFixed(1)}/${section.totalMax}\n\n`;
       md += `**Analysis:** ${section.analysis}\n\n`;
 
       if (section.strengths.length > 0) {
@@ -324,7 +382,7 @@ export default function Home() {
             <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)]">
               Business Brainlift
               <span className="text-[var(--alpha-blue)]"> Grader</span>
-            </h1>
+          </h1>
           </div>
           <p className="text-[var(--foreground-muted)] max-w-xl mx-auto">
             AI-powered evaluation of your business plan. Enter your Workflowy link or paste your content
@@ -470,7 +528,7 @@ Copy all content from your Workflowy document and paste it here. Make sure to in
                       Tip: Switch to &quot;Paste Content&quot; mode and copy your content directly from Workflowy.
                     </p>
                   )}
-                </div>
+        </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -530,7 +588,7 @@ Copy all content from your Workflowy document and paste it here. Make sure to in
           <p>Alpha Founders Academy • Business Brainlift Grader</p>
           <p className="mt-1">Pass threshold: 80% • Powered by Claude AI</p>
         </footer>
-      </div>
-    </main>
+        </div>
+      </main>
   );
 }

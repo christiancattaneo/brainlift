@@ -1,7 +1,21 @@
 import { NextRequest } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { BrainliftSection, SectionGrade, SECTIONS_CONFIG, GradingStreamEvent } from '@/types';
-import { buildGradingPrompt, buildFinalSummaryPrompt } from '@/lib/grading';
+import { 
+  BrainliftSection, 
+  SectionGrade, 
+  SECTIONS_CONFIG, 
+  GradingStreamEvent,
+  TractionEvidence,
+  MilestoneType,
+  GradingResult
+} from '@/types';
+import { 
+  buildGradingPrompt, 
+  buildFinalSummaryPrompt, 
+  buildTractionAnalysisPrompt,
+  calculateTractionBonus,
+  calculateMilestoneBonuses
+} from '@/lib/grading';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -88,16 +102,30 @@ export async function POST(request: NextRequest) {
               };
             }
             
+            // CRITICAL: Enforce maximum caps on all scores
+            const thoroughnessScore = Math.min(
+              Math.max(0, gradeData.thoroughnessScore || 0),
+              config.thoroughnessMax
+            );
+            const viabilityScore = Math.min(
+              Math.max(0, gradeData.viabilityScore || 0),
+              config.viabilityMax
+            );
+            const executabilityScore = Math.min(
+              Math.max(0, gradeData.executabilityScore || 0),
+              config.executabilityMax
+            );
+            
             const grade: SectionGrade = {
               sectionId: section.id,
               sectionTitle: section.title,
-              thoroughnessScore: Math.min(gradeData.thoroughnessScore || 0, config.thoroughnessMax),
+              thoroughnessScore,
               thoroughnessMax: config.thoroughnessMax,
-              viabilityScore: Math.min(gradeData.viabilityScore || 0, config.viabilityMax),
+              viabilityScore,
               viabilityMax: config.viabilityMax,
-              executabilityScore: Math.min(gradeData.executabilityScore || 0, config.executabilityMax),
+              executabilityScore,
               executabilityMax: config.executabilityMax,
-              totalScore: 0,
+              totalScore: thoroughnessScore + viabilityScore + executabilityScore,
               totalMax: config.thoroughnessMax + config.viabilityMax + config.executabilityMax,
               analysis: gradeData.analysis || '',
               strengths: gradeData.strengths || [],
@@ -105,7 +133,6 @@ export async function POST(request: NextRequest) {
               status: 'complete',
             };
             
-            grade.totalScore = grade.thoroughnessScore + grade.viabilityScore + grade.executabilityScore;
             grades.push(grade);
             
             // Send complete event
@@ -149,6 +176,63 @@ export async function POST(request: NextRequest) {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
         
+        // TRACTION ANALYSIS - Scan for real progress
+        const tractionProgressEvent: GradingStreamEvent = {
+          type: 'section_progress',
+          message: 'Analyzing traction and progress...',
+        };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(tractionProgressEvent)}\n\n`));
+        
+        let traction: TractionEvidence[] = [];
+        let milestoneProgress: Record<MilestoneType, number> = {
+          '30_day': 0,
+          'semester': 0,
+          'year_1': 0,
+          'year_2_3': 0,
+        };
+        
+        try {
+          // Combine all section content for traction analysis
+          const fullContent = sections.map(s => `## ${s.title}\n${s.content}`).join('\n\n');
+          const tractionPrompt = buildTractionAnalysisPrompt(fullContent);
+          
+          const tractionMessage = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            messages: [
+              {
+                role: 'user',
+                content: tractionPrompt,
+              },
+            ],
+          });
+          
+          const tractionText = tractionMessage.content[0].type === 'text'
+            ? tractionMessage.content[0].text
+            : '';
+          
+          try {
+            const jsonMatch = tractionText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const tractionData = JSON.parse(jsonMatch[0]);
+              traction = tractionData.traction || [];
+              milestoneProgress = tractionData.milestoneProgress || milestoneProgress;
+            }
+          } catch {
+            console.error('Failed to parse traction data');
+          }
+          
+          // Send traction analysis event
+          const tractionEvent: GradingStreamEvent = {
+            type: 'traction_analysis',
+            data: traction,
+          };
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(tractionEvent)}\n\n`));
+          
+        } catch (error) {
+          console.error('Error analyzing traction:', error);
+        }
+        
         // Generate final summary
         const summaryProgressEvent: GradingStreamEvent = {
           type: 'section_progress',
@@ -157,7 +241,7 @@ export async function POST(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(summaryProgressEvent)}\n\n`));
         
         try {
-          const summaryPrompt = buildFinalSummaryPrompt(grades);
+          const summaryPrompt = buildFinalSummaryPrompt(grades, traction);
           
           const summaryMessage = await anthropic.messages.create({
             model: 'claude-sonnet-4-20250514',
@@ -189,44 +273,74 @@ export async function POST(request: NextRequest) {
             };
           }
           
-          const totalScore = grades.reduce((sum, g) => sum + g.totalScore, 0);
-          const maxScore = 100;
-          const percentage = Math.round((totalScore / maxScore) * 100);
+          // Calculate base score (capped at 100)
+          const baseScore = Math.min(
+            grades.reduce((sum, g) => sum + g.totalScore, 0),
+            100
+          );
+          const baseMaxScore = 100;
+          const basePercentage = Math.round((baseScore / baseMaxScore) * 100);
+          
+          // Calculate traction bonus and milestone bonuses
+          const bonusScore = calculateTractionBonus(traction);
+          const milestones = calculateMilestoneBonuses(milestoneProgress, traction);
+          
+          // Total includes base + bonus
+          const totalScore = baseScore + bonusScore;
+          const percentage = Math.round((totalScore / baseMaxScore) * 100);
+          
+          const finalResult: GradingResult = {
+            sections: grades,
+            baseScore,
+            baseMaxScore,
+            basePercentage,
+            traction,
+            milestones,
+            bonusScore,
+            totalScore,
+            maxScore: baseMaxScore,
+            percentage,
+            passed: basePercentage >= 80, // Pass based on base score only
+            overallAnalysis: summaryData.overallAnalysis,
+            topRecommendations: summaryData.topRecommendations,
+            timestamp: new Date().toISOString(),
+          };
           
           const finalEvent: GradingStreamEvent = {
             type: 'final_summary',
-            data: {
-              sections: grades,
-              totalScore,
-              maxScore,
-              percentage,
-              passed: percentage >= 80,
-              overallAnalysis: summaryData.overallAnalysis,
-              topRecommendations: summaryData.topRecommendations,
-              timestamp: new Date().toISOString(),
-            },
+            data: finalResult,
           };
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalEvent)}\n\n`));
           
         } catch (error) {
           console.error('Error generating summary:', error);
           
-          const totalScore = grades.reduce((sum, g) => sum + g.totalScore, 0);
-          const maxScore = 100;
-          const percentage = Math.round((totalScore / maxScore) * 100);
+          const baseScore = Math.min(
+            grades.reduce((sum, g) => sum + g.totalScore, 0),
+            100
+          );
+          const milestones = calculateMilestoneBonuses(milestoneProgress, traction);
+          
+          const finalResult: GradingResult = {
+            sections: grades,
+            baseScore,
+            baseMaxScore: 100,
+            basePercentage: Math.round((baseScore / 100) * 100),
+            traction,
+            milestones,
+            bonusScore: 0,
+            totalScore: baseScore,
+            maxScore: 100,
+            percentage: Math.round((baseScore / 100) * 100),
+            passed: baseScore >= 80,
+            overallAnalysis: 'Grading complete.',
+            topRecommendations: [],
+            timestamp: new Date().toISOString(),
+          };
           
           const finalEvent: GradingStreamEvent = {
             type: 'final_summary',
-            data: {
-              sections: grades,
-              totalScore,
-              maxScore,
-              percentage,
-              passed: percentage >= 80,
-              overallAnalysis: 'Grading complete.',
-              topRecommendations: [],
-              timestamp: new Date().toISOString(),
-            },
+            data: finalResult,
           };
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(finalEvent)}\n\n`));
         }
@@ -253,4 +367,3 @@ export async function POST(request: NextRequest) {
     },
   });
 }
-
