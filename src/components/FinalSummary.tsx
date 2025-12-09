@@ -138,7 +138,8 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
                 className="flex items-start gap-3 p-3 rounded-lg bg-[var(--background)]/50"
               >
                 <div
-                  className={`w-2 h-2 rounded-full mt-2 ${t.verified ? 'bg-volt-mint' : 'bg-electric-cyan'}`}
+                  className="w-2 h-2 rounded-full mt-2"
+                  style={{ backgroundColor: t.verified ? 'var(--success)' : 'var(--electric-cyan)' }}
                 />
                 <div className="flex-1">
                   <div className="text-sm font-medium text-[var(--foreground)]">
@@ -148,7 +149,7 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
                     {t.description}
                   </div>
                   {t.verified && (
-                    <div className="text-xs text-volt-mint mt-1 flex items-center gap-1">
+                    <div className="text-xs mt-1 flex items-center gap-1" style={{ color: 'var(--success-text)' }}>
                       <CheckCircle className="w-3 h-3" />
                       Verified
                     </div>
