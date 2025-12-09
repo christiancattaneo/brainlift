@@ -110,7 +110,7 @@ export function ConcentricRings({
         })}
       </svg>
       
-      {/* Center content - smaller text */}
+      {/* Center content - smaller text with outline for visibility */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.div
           className="text-center"
@@ -121,22 +121,24 @@ export function ConcentricRings({
           <span
             className="font-bold block leading-none"
             style={{ 
-              color: passed ? '#00FFA3' : '#FF4F00',
+              color: passed ? '#00CC82' : '#FF4F00', // Darker green for better contrast
               fontSize: Math.min(size * 0.1, 18),
-              textShadow: `0 0 15px ${passed ? 'rgba(0,255,163,0.4)' : 'rgba(255,79,0,0.4)'}`,
+              textShadow: '0 0 1px rgba(0,0,0,0.3), 0 0 2px rgba(0,0,0,0.2)',
+              WebkitTextStroke: '0.5px rgba(0,0,0,0.15)',
             }}
           >
             {totalPercentage}%
           </span>
           {bonusScore > 0 && (
             <motion.span
-              className="block mt-0.5 font-medium opacity-80"
+              className="block mt-0.5 font-semibold"
               style={{ 
                 fontSize: Math.min(size * 0.04, 8),
-                color: '#00FFA3',
+                color: '#00AA6E', // Darker green
+                textShadow: '0 0 1px rgba(0,0,0,0.2)',
               }}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 0.8 }}
+              animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
             >
               +{bonusScore.toFixed(1)} bonus
