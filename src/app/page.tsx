@@ -4,10 +4,11 @@ import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrainliftSection, SectionGrade, GradingResult, GradingStreamEvent, SECTIONS_CONFIG } from '@/types';
 import { SectionCard, FinalSummary, ThinkingIndicator } from '@/components';
-import { Brain, Link, ArrowRight, AlertCircle, Sparkles } from 'lucide-react';
+import { Brain, Link, ArrowRight, AlertCircle, Sparkles, FileText } from 'lucide-react';
 import jsPDF from 'jspdf';
 
 type AppState = 'idle' | 'fetching' | 'grading' | 'complete' | 'error';
+type InputMode = 'url' | 'paste';
 
 interface SectionStatus {
   sectionId: string;
@@ -17,7 +18,9 @@ interface SectionStatus {
 }
 
 export default function Home() {
+  const [inputMode, setInputMode] = useState<InputMode>('url');
   const [workflowyUrl, setWorkflowyUrl] = useState('');
+  const [pastedContent, setPastedContent] = useState('');
   const [appState, setAppState] = useState<AppState>('idle');
   const [error, setError] = useState<string | null>(null);
   const [sections, setSections] = useState<BrainliftSection[]>([]);
@@ -26,8 +29,12 @@ export default function Home() {
   const resultRef = useRef<HTMLDivElement>(null);
 
   const handleFetchAndGrade = useCallback(async () => {
-    if (!workflowyUrl.trim()) {
-      setError('Please enter a Workflowy URL');
+    const input = inputMode === 'url' ? workflowyUrl.trim() : pastedContent.trim();
+    
+    if (!input) {
+      setError(inputMode === 'url' 
+        ? 'Please enter a Workflowy URL' 
+        : 'Please paste your Brainlift content');
       return;
     }
 
@@ -36,17 +43,28 @@ export default function Home() {
     setGradingResult(null);
 
     try {
-      // Fetch Workflowy data
+      // Fetch/parse data
       const fetchResponse = await fetch('/api/fetch-workflowy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: workflowyUrl }),
+        body: JSON.stringify(
+          inputMode === 'url' 
+            ? { url: workflowyUrl } 
+            : { content: pastedContent }
+        ),
       });
 
       const fetchData = await fetchResponse.json();
 
       if (!fetchResponse.ok) {
-        throw new Error(fetchData.error || 'Failed to fetch Workflowy data');
+        // If URL fetch failed, suggest pasting content
+        if (fetchData.suggestion === 'paste_content' && inputMode === 'url') {
+          setError(fetchData.error);
+          setInputMode('paste');
+          setAppState('error');
+          return;
+        }
+        throw new Error(fetchData.error || 'Failed to process content');
       }
 
       const fetchedSections: BrainliftSection[] = fetchData.sections;
@@ -142,7 +160,7 @@ export default function Home() {
       setError(err instanceof Error ? err.message : 'An error occurred');
       setAppState('error');
     }
-  }, [workflowyUrl]);
+  }, [workflowyUrl, pastedContent, inputMode]);
 
   const handleExportPDF = useCallback(() => {
     if (!gradingResult) return;
@@ -273,6 +291,7 @@ export default function Home() {
 
   const handleReset = () => {
     setWorkflowyUrl('');
+    setPastedContent('');
     setAppState('idle');
     setError(null);
     setSections([]);
@@ -303,7 +322,7 @@ export default function Home() {
             </h1>
           </div>
           <p className="text-chrome-silver max-w-xl mx-auto">
-            AI-powered evaluation of your business plan. Paste your Workflowy link below
+            AI-powered evaluation of your business plan. Enter your Workflowy link or paste your content
             to get detailed feedback on viability, thoroughness, and executability.
           </p>
         </motion.header>
@@ -315,46 +334,119 @@ export default function Home() {
           transition={{ delay: 0.2 }}
           className="glass rounded-2xl p-6 mb-8"
         >
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-chrome-silver">
-                <Link className="w-5 h-5" />
-              </div>
-              <input
-                type="url"
-                value={workflowyUrl}
-                onChange={(e) => setWorkflowyUrl(e.target.value)}
-                placeholder="https://workflowy.com/s/your-brainlift/..."
-                disabled={appState === 'fetching' || appState === 'grading'}
-                className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-canvas-white placeholder-chrome-silver/50 focus:outline-none focus:border-alpha-blue focus:ring-1 focus:ring-alpha-blue transition-all disabled:opacity-50"
-              />
-            </div>
+          {/* Input mode toggle */}
+          <div className="flex gap-2 mb-4">
             <button
-              onClick={appState === 'complete' ? handleReset : handleFetchAndGrade}
+              onClick={() => setInputMode('url')}
               disabled={appState === 'fetching' || appState === 'grading'}
-              className="px-6 py-4 bg-alpha-blue hover:bg-alpha-blue/80 disabled:bg-alpha-blue/50 text-canvas-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-blue disabled:shadow-none"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                inputMode === 'url'
+                  ? 'bg-alpha-blue text-canvas-white'
+                  : 'bg-white/5 text-chrome-silver hover:bg-white/10'
+              }`}
             >
-              {appState === 'idle' || appState === 'error' ? (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  Grade Brainlift
-                </>
-              ) : appState === 'fetching' ? (
-                <>
-                  <ThinkingIndicator message="Fetching..." />
-                </>
-              ) : appState === 'grading' ? (
-                <>
-                  <ThinkingIndicator message="Grading..." />
-                </>
-              ) : (
-                <>
-                  <ArrowRight className="w-5 h-5" />
-                  Grade Another
-                </>
-              )}
+              <Link className="w-4 h-4" />
+              Workflowy URL
+            </button>
+            <button
+              onClick={() => setInputMode('paste')}
+              disabled={appState === 'fetching' || appState === 'grading'}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                inputMode === 'paste'
+                  ? 'bg-alpha-blue text-canvas-white'
+                  : 'bg-white/5 text-chrome-silver hover:bg-white/10'
+              }`}
+            >
+              <FileText className="w-4 h-4" />
+              Paste Content
             </button>
           </div>
+
+          {/* URL Input */}
+          {inputMode === 'url' && (
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-chrome-silver">
+                  <Link className="w-5 h-5" />
+                </div>
+                <input
+                  type="url"
+                  value={workflowyUrl}
+                  onChange={(e) => setWorkflowyUrl(e.target.value)}
+                  placeholder="https://workflowy.com/s/your-brainlift/..."
+                  disabled={appState === 'fetching' || appState === 'grading'}
+                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-canvas-white placeholder-chrome-silver/50 focus:outline-none focus:border-alpha-blue focus:ring-1 focus:ring-alpha-blue transition-all disabled:opacity-50"
+                />
+              </div>
+              <button
+                onClick={appState === 'complete' ? handleReset : handleFetchAndGrade}
+                disabled={appState === 'fetching' || appState === 'grading'}
+                className="px-6 py-4 bg-alpha-blue hover:bg-alpha-blue/80 disabled:bg-alpha-blue/50 text-canvas-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-blue disabled:shadow-none"
+              >
+                {appState === 'idle' || appState === 'error' ? (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Grade Brainlift
+                  </>
+                ) : appState === 'fetching' ? (
+                  <ThinkingIndicator message="Fetching..." />
+                ) : appState === 'grading' ? (
+                  <ThinkingIndicator message="Grading..." />
+                ) : (
+                  <>
+                    <ArrowRight className="w-5 h-5" />
+                    Grade Another
+                  </>
+                )}
+              </button>
+            </div>
+          )}
+
+          {/* Paste Content Input */}
+          {inputMode === 'paste' && (
+            <div className="space-y-4">
+              <textarea
+                value={pastedContent}
+                onChange={(e) => setPastedContent(e.target.value)}
+                placeholder="Paste your Business Brainlift content here...
+
+Copy all content from your Workflowy document and paste it here. Make sure to include section headers like:
+- Strategic Vision
+- Long-Term Vision
+- Semester Targets
+- 30-Day Gameplan
+- Market and Competitive Analysis
+- Product/Service Description
+- Skills and Resources Needed
+- Financial Projections
+- Risks, Mitigation, and Contingencies
+- Appendix"
+                disabled={appState === 'fetching' || appState === 'grading'}
+                className="w-full h-64 p-4 bg-white/5 border border-white/10 rounded-xl text-canvas-white placeholder-chrome-silver/50 focus:outline-none focus:border-alpha-blue focus:ring-1 focus:ring-alpha-blue transition-all disabled:opacity-50 resize-none font-mono text-sm"
+              />
+              <button
+                onClick={appState === 'complete' ? handleReset : handleFetchAndGrade}
+                disabled={appState === 'fetching' || appState === 'grading'}
+                className="w-full px-6 py-4 bg-alpha-blue hover:bg-alpha-blue/80 disabled:bg-alpha-blue/50 text-canvas-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-blue disabled:shadow-none"
+              >
+                {appState === 'idle' || appState === 'error' ? (
+                  <>
+                    <Sparkles className="w-5 h-5" />
+                    Grade Brainlift
+                  </>
+                ) : appState === 'fetching' ? (
+                  <ThinkingIndicator message="Processing..." />
+                ) : appState === 'grading' ? (
+                  <ThinkingIndicator message="Grading..." />
+                ) : (
+                  <>
+                    <ArrowRight className="w-5 h-5" />
+                    Grade Another
+                  </>
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Error message */}
           <AnimatePresence>
@@ -366,7 +458,14 @@ export default function Home() {
                 className="mt-4 p-4 rounded-xl bg-international-orange/20 border border-international-orange/30 flex items-start gap-3"
               >
                 <AlertCircle className="w-5 h-5 text-international-orange flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-international-orange">{error}</p>
+                <div className="text-sm text-international-orange">
+                  <p>{error}</p>
+                  {inputMode === 'url' && error.includes('paste') && (
+                    <p className="mt-2 text-chrome-silver">
+                      Tip: Switch to &quot;Paste Content&quot; mode and copy your content directly from Workflowy.
+                    </p>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
