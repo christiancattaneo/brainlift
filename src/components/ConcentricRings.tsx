@@ -110,7 +110,7 @@ export function ConcentricRings({
         })}
       </svg>
       
-      {/* Center content */}
+      {/* Center content - smaller text */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <motion.div
           className="text-center"
@@ -122,21 +122,21 @@ export function ConcentricRings({
             className="font-bold block leading-none"
             style={{ 
               color: passed ? '#00FFA3' : '#FF4F00',
-              fontSize: Math.min(size * 0.13, 24),
-              textShadow: `0 0 20px ${passed ? 'rgba(0,255,163,0.3)' : 'rgba(255,79,0,0.3)'}`,
+              fontSize: Math.min(size * 0.1, 18),
+              textShadow: `0 0 15px ${passed ? 'rgba(0,255,163,0.4)' : 'rgba(255,79,0,0.4)'}`,
             }}
           >
             {totalPercentage}%
           </span>
           {bonusScore > 0 && (
             <motion.span
-              className="block mt-0.5 font-medium"
+              className="block mt-0.5 font-medium opacity-80"
               style={{ 
-                fontSize: Math.min(size * 0.045, 10),
+                fontSize: Math.min(size * 0.04, 8),
                 color: '#00FFA3',
               }}
               initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              animate={{ opacity: 0.8 }}
               transition={{ delay: 1 }}
             >
               +{bonusScore.toFixed(1)} bonus
@@ -169,9 +169,10 @@ export function RingLegend({ milestones, baseScore, baseMaxScore, passed }: {
   ];
   
   return (
-    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
+    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
       {allItems.map((item, i) => (
-        <div key={i} className="flex items-center gap-1">
+        <div key={i} className="flex items-center gap-1.5">
+          {/* Colored dot indicator */}
           <div
             className="w-2.5 h-2.5 rounded-full flex-shrink-0"
             style={{ 
@@ -179,10 +180,12 @@ export function RingLegend({ milestones, baseScore, baseMaxScore, passed }: {
               boxShadow: item.active ? `0 0 8px ${item.color}60` : 'none'
             }}
           />
-          <span className="text-[var(--foreground)] opacity-70">{item.label}</span>
+          {/* Label in muted foreground */}
+          <span className="text-[var(--foreground)] opacity-60">{item.label}</span>
+          {/* Value in strong foreground for readability */}
           <span 
-            className="font-mono font-semibold"
-            style={{ color: item.active ? item.color : 'rgba(128,128,128,0.5)' }}
+            className="font-mono font-semibold text-[var(--foreground)]"
+            style={{ opacity: item.active ? 1 : 0.4 }}
           >
             {item.value}
           </span>
