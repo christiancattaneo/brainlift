@@ -1,36 +1,88 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Business Brainlift Grader
 
-## Getting Started
+AI-powered grading system for Business Brainlift submissions at Alpha Founders Academy.
 
-First, run the development server:
+## Features
+
+- **Workflowy Integration**: Paste shared Workflowy links to automatically fetch business plans
+- **AI-Powered Grading**: Uses Claude AI to evaluate against the official rubric
+- **Real-time Streaming**: Watch sections get analyzed and graded in real-time
+- **Detailed Feedback**: Strengths, improvements, and actionable recommendations per section
+- **Export Options**: PDF and Markdown export of grading reports
+- **Pass/Fail Status**: Clear 80% threshold with visual feedback
+
+## Grading Rubric
+
+- **Thoroughness (30 points)**: Depth and completeness of each section
+- **Viability (30 points)**: Proof of real business potential with data-backed claims
+- **Executability (40 points)**: Actionable, realistic plans that teens can execute
+
+**Pass Threshold**: 80% (80/100 points)
+
+## Setup
+
+### Prerequisites
+
+- Node.js 18+
+- Anthropic API key
+
+### Installation
+
+```bash
+npm install
+```
+
+### Environment Variables
+
+Create a `.env.local` file:
+
+```
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+```
+
+### Development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Production Build
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Deployment
 
-To learn more about Next.js, take a look at the following resources:
+### Vercel (Recommended)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push to GitHub
+2. Import project in Vercel
+3. Add `ANTHROPIC_API_KEY` environment variable
+4. Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Tech Stack
 
-## Deploy on Vercel
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Tailwind CSS
+- **Animations**: Framer Motion
+- **AI**: Anthropic Claude API
+- **Icons**: Lucide React
+- **PDF Export**: jsPDF
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Color Palette (Alpha Founders Academy)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Alpha Blue: `#1C1CFF`
+- Structure Black: `#1B1B1B`
+- Canvas White: `#FFFFFF`
+- Volt Mint: `#00FFA3`
+- International Orange: `#FF4F00`
+- Electric Cyan: `#00E0FF`
+- Chrome Silver: `#E5E7EB`
+
+## License
+
+Proprietary - Alpha Founders Academy
