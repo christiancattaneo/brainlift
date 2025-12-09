@@ -20,13 +20,23 @@ export function extractShareId(url: string): string | null {
 }
 
 /**
- * Fetch Workflowy data from shared link by scraping the page
+ * Fetch Workflowy data from shared link using two-step approach:
+ * 1. Fetch HTML page to get internal share_id and session cookie
+ * 2. Use session cookie to call API and get full data
  */
-export async function fetchWorkflowyData(shareId: string): Promise<WorkflowyNode[]> {
+export async function fetchWorkflowyData(urlIdentifier: string): Promise<WorkflowyNode[]> {
   // Construct the full shared URL
-  const sharedUrl = `https://workflowy.com/s/${shareId}`;
+  // Handle both full URLs and just the identifier
+  let sharedUrl: string;
+  if (urlIdentifier.includes('workflowy.com')) {
+    sharedUrl = urlIdentifier;
+  } else {
+    sharedUrl = `https://workflowy.com/s/${urlIdentifier}`;
+  }
   
-  // Fetch the HTML page
+  console.log(`[Workflowy] Fetching: ${sharedUrl}`);
+  
+  // Step 1: Fetch the HTML page to get share_id and session cookie
   const pageResponse = await fetch(sharedUrl, {
     headers: {
       'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -40,101 +50,80 @@ export async function fetchWorkflowyData(shareId: string): Promise<WorkflowyNode
   }
   
   const html = await pageResponse.text();
+  console.log(`[Workflowy] HTML length: ${html.length}`);
   
-  // Try to extract the internal share_id from the page
-  // Look for patterns like: "shareId":"xxxxx" or share_id in various formats
-  const shareIdPatterns = [
-    /"shareId"\s*:\s*"([^"]+)"/,
-    /share_id=([^&"'\s]+)/,
-    /"share_id"\s*:\s*"([^"]+)"/,
-    /data-share-id="([^"]+)"/,
-  ];
-  
-  let internalShareId: string | null = null;
-  for (const pattern of shareIdPatterns) {
-    const match = html.match(pattern);
-    if (match?.[1]) {
-      internalShareId = match[1];
-      break;
-    }
+  // Extract the internal share_id from the HTML
+  const shareIdMatch = html.match(/"share_id"\s*:\s*"([^"]+)"/);
+  if (!shareIdMatch?.[1]) {
+    throw new Error('Could not find share_id in Workflowy page. The link may be private or invalid.');
   }
   
-  // Try to extract embedded project data from the HTML
-  const projectDataMatch = html.match(/var\s+PROJECT_TREE_DATA\s*=\s*(\{[\s\S]*?\});/);
-  if (projectDataMatch) {
-    try {
-      const projectData = JSON.parse(projectDataMatch[1]);
-      if (projectData.mainProjectTreeInfo?.rootProjectChildren) {
-        return projectData.mainProjectTreeInfo.rootProjectChildren;
-      }
-    } catch {
-      // Continue to API fallback
-    }
+  const internalShareId = shareIdMatch[1];
+  console.log(`[Workflowy] Found internal share_id: ${internalShareId}`);
+  
+  // Extract session cookie from response
+  const cookies = pageResponse.headers.get('set-cookie') || '';
+  const sessionMatch = cookies.match(/sessionid=([^;]+)/);
+  
+  if (!sessionMatch?.[1]) {
+    throw new Error('Could not get session from Workflowy. Please try again.');
   }
   
-  // Try another pattern for embedded data
-  const initDataMatch = html.match(/__INITIAL_DATA__\s*=\s*(\{[\s\S]*?\});/);
-  if (initDataMatch) {
-    try {
-      const initData = JSON.parse(initDataMatch[1]);
-      if (initData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
-        return initData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
-      }
-    } catch {
-      // Continue to API fallback
-    }
-  }
+  const sessionId = sessionMatch[1];
+  console.log(`[Workflowy] Got session cookie`);
   
-  // If we found an internal share_id, try the API
-  const apiShareId = internalShareId || shareId;
-  
-  // Try the get_initialization_data endpoint
-  const initResponse = await fetch(
-    `https://workflowy.com/get_initialization_data?share_id=${apiShareId}&client_version=21&client_version_v2=28&no_root_children=1&include_main_tree=1`,
+  // Step 2: Call API with session cookie to get full data
+  const apiResponse = await fetch(
+    `https://workflowy.com/get_initialization_data?share_id=${internalShareId}&client_version=21&client_version_v2=28&no_root_children=0&include_main_tree=1`,
     {
       headers: {
         'Accept': 'application/json',
+        'Cookie': `sessionid=${sessionId}`,
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
         'Referer': sharedUrl,
       },
     }
   );
   
-  if (initResponse.ok) {
-    try {
-      const initData = await initResponse.json();
-      if (initData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
-        return initData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
+  if (!apiResponse.ok) {
+    console.log(`[Workflowy] API returned ${apiResponse.status}, trying get_tree_data...`);
+    
+    // Fallback to get_tree_data endpoint
+    const treeResponse = await fetch(
+      `https://workflowy.com/get_tree_data/?share_id=${internalShareId}`,
+      {
+        headers: {
+          'Accept': 'application/json',
+          'Cookie': `sessionid=${sessionId}`,
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+          'Referer': sharedUrl,
+        },
       }
-    } catch {
-      // Continue to tree data fallback
+    );
+    
+    if (!treeResponse.ok) {
+      throw new Error(`Workflowy API returned ${treeResponse.status}. The link may require authentication.`);
     }
+    
+    const treeData = await treeResponse.json();
+    if (treeData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
+      return treeData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
+    }
+    
+    throw new Error('Could not extract data from Workflowy API response.');
   }
   
-  // Try get_tree_data endpoint
-  const treeResponse = await fetch(
-    `https://workflowy.com/get_tree_data/?share_id=${apiShareId}`,
-    {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-        'Referer': sharedUrl,
-      },
-    }
-  );
+  const apiData = await apiResponse.json();
+  console.log(`[Workflowy] API response keys: ${Object.keys(apiData).join(', ')}`);
   
-  if (treeResponse.ok) {
-    try {
-      const treeData = await treeResponse.json();
-      if (treeData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
-        return treeData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
-      }
-    } catch {
-      // Fall through to error
-    }
+  // Extract children from the response
+  if (apiData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
+    const children = apiData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
+    console.log(`[Workflowy] Found ${children.length} root children`);
+    return children;
   }
   
-  throw new Error('Could not extract Workflowy data. The shared link may require authentication or the format is not supported. Please try pasting your content directly.');
+  throw new Error('Could not extract Workflowy data from API response.');
 }
 
 /**

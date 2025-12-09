@@ -1,11 +1,6 @@
 Business Brainlift - StudySync AI
 
 
-
-*Students must use this exact hierarchy. First week: Draft Wednesday EOD; pitch Friday.*
-
-
-
 # Strategic Vision
 
 

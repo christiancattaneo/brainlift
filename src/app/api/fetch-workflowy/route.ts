@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { extractShareId, fetchWorkflowyData, parseToSections, parseTextToSections } from '@/lib/workflowy';
+import { fetchWorkflowyData, parseToSections, parseTextToSections } from '@/lib/workflowy';
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,25 +32,9 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    // Handle full URLs or just the share ID
-    let shareId: string | null = null;
-    
-    if (url.includes('workflowy.com')) {
-      shareId = extractShareId(url);
-    } else if (/^[a-zA-Z0-9]+$/.test(url.trim())) {
-      // Assume it's just the share ID
-      shareId = url.trim();
-    }
-    
-    if (!shareId) {
-      return NextResponse.json(
-        { error: 'Invalid Workflowy URL format. Expected: https://workflowy.com/s/title/shareId' },
-        { status: 400 }
-      );
-    }
-    
+    // Pass the full URL to fetchWorkflowyData - it handles extraction internally
     try {
-      const nodes = await fetchWorkflowyData(shareId);
+      const nodes = await fetchWorkflowyData(url);
       const sections = parseToSections(nodes);
       
       if (sections.length === 0) {
