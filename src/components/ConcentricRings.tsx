@@ -24,6 +24,18 @@ export function ConcentricRings({
   const basePercentage = Math.round((baseScore / baseMaxScore) * 100);
   const totalPercentage = Math.round((totalScore / baseMaxScore) * 100);
   
+  // Calculate ring sizes to fit within container with proper padding
+  const padding = 12;
+  const availableRadius = (size / 2) - padding;
+  const ringCount = milestones.length + 1; // base + milestones
+  const ringSpacing = size * 0.055; // Proportional spacing
+  const baseStrokeWidth = Math.max(10, size * 0.05);
+  const milestoneStrokeWidth = Math.max(6, size * 0.035);
+  
+  // Calculate base ring radius (innermost) - ensure all rings fit
+  const totalRingSpace = (ringCount - 1) * ringSpacing;
+  const baseRadius = Math.max(size * 0.2, availableRadius - totalRingSpace - (baseStrokeWidth / 2));
+  
   // Ring configuration - innermost to outermost
   const ringConfig = [
     {
@@ -31,21 +43,24 @@ export function ConcentricRings({
       label: 'Base Plan',
       percentage: Math.min(basePercentage, 100),
       color: passed ? '#00FFA3' : (basePercentage >= 60 ? '#00E0FF' : '#FF4F00'),
-      strokeWidth: 12,
-      radius: (size * 0.28),
+      strokeWidth: baseStrokeWidth,
+      radius: baseRadius,
     },
     ...milestones.map((m, i) => ({
       id: m.milestone,
       label: m.label,
       percentage: m.progressPercent,
       color: m.color,
-      strokeWidth: 8,
-      radius: (size * 0.28) + ((i + 1) * (size * 0.09)),
+      strokeWidth: milestoneStrokeWidth,
+      radius: baseRadius + ((i + 1) * ringSpacing),
     })),
   ];
   
   return (
-    <div className="relative" style={{ width: size, height: size }}>
+    <div 
+      className="relative flex items-center justify-center flex-shrink-0" 
+      style={{ width: size, height: size }}
+    >
       <svg
         width={size}
         height={size}
@@ -57,7 +72,7 @@ export function ConcentricRings({
           const circumference = 2 * Math.PI * ring.radius;
           const cappedPercentage = Math.min(ring.percentage, 100);
           const strokeDashoffset = circumference - (cappedPercentage / 100) * circumference;
-          const delay = (ringConfig.length - 1 - index) * 0.2;
+          const delay = (ringConfig.length - 1 - index) * 0.12;
           
           return (
             <g key={ring.id}>
@@ -67,7 +82,7 @@ export function ConcentricRings({
                 cy={size / 2}
                 r={ring.radius}
                 fill="none"
-                stroke="rgba(255, 255, 255, 0.08)"
+                stroke="rgba(128, 128, 128, 0.15)"
                 strokeWidth={ring.strokeWidth}
               />
               
@@ -84,29 +99,9 @@ export function ConcentricRings({
                   strokeDasharray={circumference}
                   initial={{ strokeDashoffset: circumference }}
                   animate={{ strokeDashoffset }}
-                  transition={{ duration: 1.5, ease: 'easeOut', delay }}
+                  transition={{ duration: 1.2, ease: 'easeOut', delay }}
                   style={{
-                    filter: `drop-shadow(0 0 6px ${ring.color}60)`,
-                  }}
-                />
-              )}
-              
-              {/* Overflow indicator for >100% */}
-              {ring.percentage > 100 && (
-                <motion.circle
-                  cx={size / 2}
-                  cy={size / 2}
-                  r={ring.radius}
-                  fill="none"
-                  stroke={ring.color}
-                  strokeWidth={ring.strokeWidth + 2}
-                  strokeLinecap="round"
-                  strokeDasharray={`${circumference * 0.05} ${circumference * 0.95}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: [0.3, 1, 0.3] }}
-                  transition={{ duration: 2, repeat: Infinity, delay }}
-                  style={{
-                    filter: `drop-shadow(0 0 10px ${ring.color})`,
+                    filter: `drop-shadow(0 0 6px ${ring.color}70)`,
                   }}
                 />
               )}
@@ -121,20 +116,24 @@ export function ConcentricRings({
           className="text-center"
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
+          transition={{ delay: 0.3, duration: 0.4 }}
         >
           <span
-            className="text-4xl font-bold block"
-            style={{ color: passed ? '#00FFA3' : '#FF4F00' }}
+            className="font-bold block"
+            style={{ 
+              color: passed ? '#00FFA3' : '#FF4F00',
+              fontSize: size * 0.18,
+            }}
           >
             {totalPercentage}%
           </span>
           {bonusScore > 0 && (
             <motion.span
-              className="text-sm text-volt-mint block mt-1"
+              className="text-volt-mint block"
+              style={{ fontSize: size * 0.055 }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
+              transition={{ delay: 1 }}
             >
               +{bonusScore.toFixed(1)} bonus
             </motion.span>
@@ -145,7 +144,7 @@ export function ConcentricRings({
   );
 }
 
-// Legend component for the rings
+// Compact horizontal legend for milestone rings
 export function RingLegend({ milestones, baseScore, baseMaxScore, passed }: {
   milestones: MilestoneBonus[];
   baseScore: number;
@@ -155,40 +154,36 @@ export function RingLegend({ milestones, baseScore, baseMaxScore, passed }: {
   const basePercentage = Math.round((baseScore / baseMaxScore) * 100);
   const baseColor = passed ? '#00FFA3' : (basePercentage >= 60 ? '#00E0FF' : '#FF4F00');
   
+  const allItems = [
+    { label: 'Base Plan', value: `${baseScore}/${baseMaxScore}`, color: baseColor, active: true },
+    ...milestones.map(m => ({
+      label: m.label,
+      value: m.progressPercent > 0 ? `+${m.earnedBonus.toFixed(1)}` : '—',
+      color: m.color,
+      active: m.progressPercent > 0,
+    })),
+  ];
+  
   return (
-    <div className="space-y-2 mt-4">
-      {/* Base ring legend */}
-      <div className="flex items-center gap-3 text-sm">
-        <div
-          className="w-3 h-3 rounded-full"
-          style={{ backgroundColor: baseColor, boxShadow: `0 0 8px ${baseColor}60` }}
-        />
-        <span className="flex-1 opacity-70">Base Plan</span>
-        <span className="font-mono" style={{ color: baseColor }}>
-          {baseScore}/{baseMaxScore}
-        </span>
-      </div>
-      
-      {/* Milestone ring legends */}
-      {milestones.map((m) => (
-        <div key={m.milestone} className="flex items-center gap-3 text-sm">
+    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+      {allItems.map((item, i) => (
+        <div key={i} className="flex items-center gap-1.5">
           <div
-            className="w-3 h-3 rounded-full"
+            className="w-2 h-2 rounded-full flex-shrink-0"
             style={{ 
-              backgroundColor: m.progressPercent > 0 ? m.color : 'rgba(255,255,255,0.2)',
-              boxShadow: m.progressPercent > 0 ? `0 0 8px ${m.color}60` : 'none'
+              backgroundColor: item.active ? item.color : 'rgba(128,128,128,0.3)',
+              boxShadow: item.active ? `0 0 6px ${item.color}50` : 'none'
             }}
           />
-          <span className="flex-1 opacity-70">{m.label}</span>
+          <span className="opacity-60">{item.label}</span>
           <span 
-            className="font-mono"
-            style={{ color: m.progressPercent > 0 ? m.color : 'rgba(255,255,255,0.3)' }}
+            className="font-mono font-medium"
+            style={{ color: item.active ? item.color : 'rgba(128,128,128,0.4)' }}
           >
-            {m.progressPercent > 0 ? `+${m.earnedBonus.toFixed(1)}` : '—'}
+            {item.value}
           </span>
         </div>
       ))}
     </div>
   );
 }
-

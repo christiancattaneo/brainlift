@@ -32,49 +32,44 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
       transition={{ duration: 0.6 }}
       className="glass rounded-2xl p-6 md:p-8 shadow-soft"
     >
-      {/* Header with concentric rings */}
-      <div className="flex flex-col lg:flex-row items-center gap-8 mb-8">
+      {/* Header with concentric rings - Horizontal layout */}
+      <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8 mb-8">
         {/* Concentric Rings Visualization */}
-        <div className="flex flex-col items-center">
+        <div className="flex-shrink-0">
           <ConcentricRings
             baseScore={result.baseScore}
             baseMaxScore={result.baseMaxScore}
             bonusScore={result.bonusScore}
             milestones={result.milestones}
             passed={result.passed}
-            size={200}
-          />
-          <RingLegend
-            milestones={result.milestones}
-            baseScore={result.baseScore}
-            baseMaxScore={result.baseMaxScore}
-            passed={result.passed}
+            size={180}
           />
         </div>
         
-        <div className="flex-1 text-center lg:text-left">
+        {/* Status & Score Info */}
+        <div className="flex-1 text-center md:text-left">
           {/* Pass/Fail Status */}
-          <div className="flex items-center justify-center lg:justify-start gap-3 mb-3">
+          <div className="flex items-center justify-center md:justify-start gap-3 mb-2">
             {result.passed ? (
               <>
-                <CheckCircle className="w-8 h-8 text-volt-mint" />
+                <CheckCircle className="w-7 h-7 text-volt-mint" />
                 <h2 className="text-2xl font-bold text-volt-mint">PASSED</h2>
               </>
             ) : (
               <>
-                <XCircle className="w-8 h-8 text-international-orange" />
+                <XCircle className="w-7 h-7 text-international-orange" />
                 <h2 className="text-2xl font-bold text-international-orange">NEEDS WORK</h2>
               </>
             )}
           </div>
           
           {/* Score breakdown */}
-          <div className="space-y-1 mb-4">
+          <div className="space-y-0.5 mb-4">
             <p className="text-[var(--foreground-muted)]">
               {result.baseScore} / {result.baseMaxScore} points ({result.basePercentage}%)
             </p>
             {hasBonusScore && (
-              <p className="text-volt-mint flex items-center justify-center lg:justify-start gap-2">
+              <p className="text-volt-mint flex items-center justify-center md:justify-start gap-2 text-sm">
                 <Zap className="w-4 h-4" />
                 +{result.bonusScore.toFixed(1)} traction bonus
               </p>
@@ -84,31 +79,41 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
             </p>
           </div>
           
-          {/* Score categories */}
-          <div className="grid grid-cols-3 gap-3 text-center">
-            <div className="p-3 rounded-lg bg-[var(--accent-light)]">
-              <div className="text-xs text-[var(--foreground-muted)]/60 uppercase tracking-wider mb-1">
-                Thoroughness
-              </div>
-              <div className="text-lg font-bold text-[var(--foreground)]">
-                {result.sections.reduce((sum, s) => sum + s.thoroughnessScore, 0).toFixed(1)}/30
-              </div>
+          {/* Milestone progress legend */}
+          <div className="mb-4">
+            <RingLegend
+              milestones={result.milestones}
+              baseScore={result.baseScore}
+              baseMaxScore={result.baseMaxScore}
+              passed={result.passed}
+            />
+          </div>
+        </div>
+        
+        {/* Score categories */}
+        <div className="flex gap-3 text-center">
+          <div className="p-3 rounded-lg bg-[var(--accent-light)] min-w-[90px]">
+            <div className="text-[10px] text-[var(--foreground-muted)]/60 uppercase tracking-wider mb-1">
+              Thoroughness
             </div>
-            <div className="p-3 rounded-lg bg-[var(--accent-light)]">
-              <div className="text-xs text-[var(--foreground-muted)]/60 uppercase tracking-wider mb-1">
-                Viability
-              </div>
-              <div className="text-lg font-bold text-[var(--foreground)]">
-                {result.sections.reduce((sum, s) => sum + s.viabilityScore, 0).toFixed(1)}/30
-              </div>
+            <div className="text-lg font-bold text-[var(--foreground)]">
+              {result.sections.reduce((sum, s) => sum + s.thoroughnessScore, 0).toFixed(1)}/30
             </div>
-            <div className="p-3 rounded-lg bg-[var(--accent-light)]">
-              <div className="text-xs text-[var(--foreground-muted)]/60 uppercase tracking-wider mb-1">
-                Executability
-              </div>
-              <div className="text-lg font-bold text-[var(--foreground)]">
-                {result.sections.reduce((sum, s) => sum + s.executabilityScore, 0).toFixed(1)}/40
-              </div>
+          </div>
+          <div className="p-3 rounded-lg bg-[var(--accent-light)] min-w-[90px]">
+            <div className="text-[10px] text-[var(--foreground-muted)]/60 uppercase tracking-wider mb-1">
+              Viability
+            </div>
+            <div className="text-lg font-bold text-[var(--foreground)]">
+              {result.sections.reduce((sum, s) => sum + s.viabilityScore, 0).toFixed(1)}/30
+            </div>
+          </div>
+          <div className="p-3 rounded-lg bg-[var(--accent-light)] min-w-[90px]">
+            <div className="text-[10px] text-[var(--foreground-muted)]/60 uppercase tracking-wider mb-1">
+              Executability
+            </div>
+            <div className="text-lg font-bold text-[var(--foreground)]">
+              {result.sections.reduce((sum, s) => sum + s.executabilityScore, 0).toFixed(1)}/40
             </div>
           </div>
         </div>
