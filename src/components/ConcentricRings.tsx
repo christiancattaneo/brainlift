@@ -119,18 +119,22 @@ export function ConcentricRings({
           transition={{ delay: 0.3, duration: 0.4 }}
         >
           <span
-            className="font-bold block"
+            className="font-bold block leading-none"
             style={{ 
               color: passed ? '#00FFA3' : '#FF4F00',
-              fontSize: size * 0.18,
+              fontSize: Math.min(size * 0.13, 24),
+              textShadow: `0 0 20px ${passed ? 'rgba(0,255,163,0.3)' : 'rgba(255,79,0,0.3)'}`,
             }}
           >
             {totalPercentage}%
           </span>
           {bonusScore > 0 && (
             <motion.span
-              className="text-volt-mint block"
-              style={{ fontSize: size * 0.055 }}
+              className="block mt-0.5 font-medium"
+              style={{ 
+                fontSize: Math.min(size * 0.045, 10),
+                color: '#00FFA3',
+              }}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1 }}
@@ -155,9 +159,9 @@ export function RingLegend({ milestones, baseScore, baseMaxScore, passed }: {
   const baseColor = passed ? '#00FFA3' : (basePercentage >= 60 ? '#00E0FF' : '#FF4F00');
   
   const allItems = [
-    { label: 'Base Plan', value: `${baseScore}/${baseMaxScore}`, color: baseColor, active: true },
+    { label: 'Base', value: `${baseScore}/${baseMaxScore}`, color: baseColor, active: true },
     ...milestones.map(m => ({
-      label: m.label,
+      label: m.label.replace(' Progress', '').replace(' Target', '').replace(' Milestone', ''),
       value: m.progressPercent > 0 ? `+${m.earnedBonus.toFixed(1)}` : '—',
       color: m.color,
       active: m.progressPercent > 0,
@@ -165,20 +169,20 @@ export function RingLegend({ milestones, baseScore, baseMaxScore, passed }: {
   ];
   
   return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs">
+    <div className="flex flex-wrap gap-x-3 gap-y-1 text-[11px]">
       {allItems.map((item, i) => (
-        <div key={i} className="flex items-center gap-1.5">
+        <div key={i} className="flex items-center gap-1">
           <div
-            className="w-2 h-2 rounded-full flex-shrink-0"
+            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
             style={{ 
-              backgroundColor: item.active ? item.color : 'rgba(128,128,128,0.3)',
-              boxShadow: item.active ? `0 0 6px ${item.color}50` : 'none'
+              backgroundColor: item.active ? item.color : 'rgba(128,128,128,0.25)',
+              boxShadow: item.active ? `0 0 8px ${item.color}60` : 'none'
             }}
           />
-          <span className="opacity-60">{item.label}</span>
+          <span className="text-[var(--foreground)] opacity-70">{item.label}</span>
           <span 
-            className="font-mono font-medium"
-            style={{ color: item.active ? item.color : 'rgba(128,128,128,0.4)' }}
+            className="font-mono font-semibold"
+            style={{ color: item.active ? item.color : 'rgba(128,128,128,0.5)' }}
           >
             {item.value}
           </span>
