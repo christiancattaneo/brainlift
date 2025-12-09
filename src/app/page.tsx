@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { BrainliftSection, SectionGrade, GradingResult, GradingStreamEvent, SECTIONS_CONFIG } from '@/types';
-import { SectionCard, FinalSummary, ThinkingIndicator } from '@/components';
+import { SectionCard, FinalSummary, ThinkingIndicator, ThemeToggle } from '@/components';
 import { Brain, Link, ArrowRight, AlertCircle, Sparkles, FileText } from 'lucide-react';
 import jsPDF from 'jspdf';
 
@@ -300,12 +300,17 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen bg-structure-black relative overflow-hidden">
+    <main className="min-h-screen bg-[var(--background)] relative overflow-hidden transition-colors duration-300">
       {/* Background effects */}
       <div className="fixed inset-0 bg-grid opacity-50" />
       <div className="fixed inset-0 bg-gradient-radial" />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-12">
+        {/* Theme Toggle - Top Right */}
+        <div className="absolute top-4 right-4 z-20">
+          <ThemeToggle />
+        </div>
+
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -20 }}
@@ -313,15 +318,15 @@ export default function Home() {
           className="text-center mb-12"
         >
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 rounded-xl bg-alpha-blue/20 glow-blue">
-              <Brain className="w-8 h-8 text-alpha-blue" />
+            <div className="p-3 rounded-xl bg-[var(--accent-light)] glow-blue">
+              <Brain className="w-8 h-8 text-[var(--alpha-blue)]" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-canvas-white">
+            <h1 className="text-3xl md:text-4xl font-bold text-[var(--foreground)]">
               Business Brainlift
-              <span className="text-alpha-blue"> Grader</span>
+              <span className="text-[var(--alpha-blue)]"> Grader</span>
             </h1>
           </div>
-          <p className="text-chrome-silver max-w-xl mx-auto">
+          <p className="text-[var(--foreground-muted)] max-w-xl mx-auto">
             AI-powered evaluation of your business plan. Enter your Workflowy link or paste your content
             to get detailed feedback on viability, thoroughness, and executability.
           </p>
@@ -332,7 +337,7 @@ export default function Home() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="glass rounded-2xl p-6 mb-8"
+          className="glass rounded-2xl p-6 mb-8 shadow-soft"
         >
           {/* Input mode toggle */}
           <div className="flex gap-2 mb-4">
@@ -341,8 +346,8 @@ export default function Home() {
               disabled={appState === 'fetching' || appState === 'grading'}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 inputMode === 'url'
-                  ? 'bg-alpha-blue text-canvas-white'
-                  : 'bg-white/5 text-chrome-silver hover:bg-white/10'
+                  ? 'bg-[var(--alpha-blue)] text-white'
+                  : 'bg-[var(--input-bg)] text-[var(--foreground-muted)] hover:bg-[var(--accent-light)]'
               }`}
             >
               <Link className="w-4 h-4" />
@@ -353,8 +358,8 @@ export default function Home() {
               disabled={appState === 'fetching' || appState === 'grading'}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 inputMode === 'paste'
-                  ? 'bg-alpha-blue text-canvas-white'
-                  : 'bg-white/5 text-chrome-silver hover:bg-white/10'
+                  ? 'bg-[var(--alpha-blue)] text-white'
+                  : 'bg-[var(--input-bg)] text-[var(--foreground-muted)] hover:bg-[var(--accent-light)]'
               }`}
             >
               <FileText className="w-4 h-4" />
@@ -366,7 +371,7 @@ export default function Home() {
           {inputMode === 'url' && (
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1 relative">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-chrome-silver">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--foreground-muted)]">
                   <Link className="w-5 h-5" />
                 </div>
                 <input
@@ -375,13 +380,13 @@ export default function Home() {
                   onChange={(e) => setWorkflowyUrl(e.target.value)}
                   placeholder="https://workflowy.com/s/your-brainlift/..."
                   disabled={appState === 'fetching' || appState === 'grading'}
-                  className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-canvas-white placeholder-chrome-silver/50 focus:outline-none focus:border-alpha-blue focus:ring-1 focus:ring-alpha-blue transition-all disabled:opacity-50"
+                  className="w-full pl-12 pr-4 py-4 bg-[var(--input-bg)] border border-[var(--border-strong)] rounded-xl text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--alpha-blue)] focus:ring-1 focus:ring-[var(--alpha-blue)] transition-all disabled:opacity-50"
                 />
               </div>
               <button
                 onClick={appState === 'complete' ? handleReset : handleFetchAndGrade}
                 disabled={appState === 'fetching' || appState === 'grading'}
-                className="px-6 py-4 bg-alpha-blue hover:bg-alpha-blue/80 disabled:bg-alpha-blue/50 text-canvas-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-blue disabled:shadow-none"
+                className="px-6 py-4 bg-[var(--alpha-blue)] hover:bg-[var(--alpha-blue-light)] disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-blue disabled:shadow-none"
               >
                 {appState === 'idle' || appState === 'error' ? (
                   <>
@@ -422,12 +427,12 @@ Copy all content from your Workflowy document and paste it here. Make sure to in
 - Risks, Mitigation, and Contingencies
 - Appendix"
                 disabled={appState === 'fetching' || appState === 'grading'}
-                className="w-full h-64 p-4 bg-white/5 border border-white/10 rounded-xl text-canvas-white placeholder-chrome-silver/50 focus:outline-none focus:border-alpha-blue focus:ring-1 focus:ring-alpha-blue transition-all disabled:opacity-50 resize-none font-mono text-sm"
+                className="w-full h-64 p-4 bg-[var(--input-bg)] border border-[var(--border-strong)] rounded-xl text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--alpha-blue)] focus:ring-1 focus:ring-[var(--alpha-blue)] transition-all disabled:opacity-50 resize-none font-mono text-sm"
               />
               <button
                 onClick={appState === 'complete' ? handleReset : handleFetchAndGrade}
                 disabled={appState === 'fetching' || appState === 'grading'}
-                className="w-full px-6 py-4 bg-alpha-blue hover:bg-alpha-blue/80 disabled:bg-alpha-blue/50 text-canvas-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-blue disabled:shadow-none"
+                className="w-full px-6 py-4 bg-[var(--alpha-blue)] hover:bg-[var(--alpha-blue-light)] disabled:opacity-50 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition-all glow-blue disabled:shadow-none"
               >
                 {appState === 'idle' || appState === 'error' ? (
                   <>
@@ -455,13 +460,13 @@ Copy all content from your Workflowy document and paste it here. Make sure to in
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="mt-4 p-4 rounded-xl bg-international-orange/20 border border-international-orange/30 flex items-start gap-3"
+                className="mt-4 p-4 rounded-xl bg-[var(--international-orange)]/10 border border-[var(--international-orange)]/30 flex items-start gap-3"
               >
-                <AlertCircle className="w-5 h-5 text-international-orange flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-international-orange">
+                <AlertCircle className="w-5 h-5 text-[var(--international-orange)] flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-[var(--international-orange)]">
                   <p>{error}</p>
                   {inputMode === 'url' && error.includes('paste') && (
-                    <p className="mt-2 text-chrome-silver">
+                    <p className="mt-2 text-[var(--foreground-muted)]">
                       Tip: Switch to &quot;Paste Content&quot; mode and copy your content directly from Workflowy.
                     </p>
                   )}
@@ -479,8 +484,8 @@ Copy all content from your Workflowy document and paste it here. Make sure to in
               animate={{ opacity: 1 }}
               className="space-y-3 mb-8"
             >
-              <h2 className="text-lg font-semibold text-canvas-white mb-4 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-alpha-blue animate-pulse" />
+              <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-[var(--alpha-blue)] animate-pulse" />
                 Section Analysis
               </h2>
               {sectionStatuses.map((sectionStatus, index) => (
@@ -506,8 +511,8 @@ Copy all content from your Workflowy document and paste it here. Make sure to in
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.3 }}
               >
-                <h2 className="text-lg font-semibold text-canvas-white mb-4 flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-volt-mint" />
+                <h2 className="text-lg font-semibold text-[var(--foreground)] mb-4 flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[var(--success)]" />
                   Final Results
                 </h2>
                 <FinalSummary
@@ -521,7 +526,7 @@ Copy all content from your Workflowy document and paste it here. Make sure to in
         </div>
 
         {/* Footer */}
-        <footer className="mt-16 text-center text-xs text-chrome-silver/40">
+        <footer className="mt-16 text-center text-xs text-[var(--foreground-muted)]/60">
           <p>Alpha Founders Academy • Business Brainlift Grader</p>
           <p className="mt-1">Pass threshold: 80% • Powered by Claude AI</p>
         </footer>

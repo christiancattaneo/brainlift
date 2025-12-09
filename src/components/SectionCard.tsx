@@ -14,28 +14,28 @@ interface SectionCardProps {
   index: number;
 }
 
-export function SectionCard({ sectionId, sectionTitle, grade, status, index }: SectionCardProps) {
+export function SectionCard({ sectionTitle, grade, status, index }: SectionCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   
   const getStatusIcon = () => {
     switch (status) {
       case 'complete':
-        return <CheckCircle className="w-5 h-5 text-volt-mint" />;
+        return <CheckCircle className="w-5 h-5 text-[var(--success)]" />;
       case 'grading':
-        return <Clock className="w-5 h-5 text-alpha-blue animate-pulse" />;
+        return <Clock className="w-5 h-5 text-[var(--alpha-blue)] animate-pulse" />;
       case 'error':
-        return <AlertCircle className="w-5 h-5 text-international-orange" />;
+        return <AlertCircle className="w-5 h-5 text-[var(--international-orange)]" />;
       default:
-        return <div className="w-5 h-5 rounded-full border-2 border-chrome-silver/30" />;
+        return <div className="w-5 h-5 rounded-full border-2 border-[var(--border-strong)]" />;
     }
   };
   
   const getScoreColor = (score: number, max: number) => {
-    if (max === 0) return 'text-chrome-silver';
+    if (max === 0) return 'text-[var(--foreground-muted)]';
     const percentage = (score / max) * 100;
-    if (percentage >= 80) return 'text-volt-mint';
-    if (percentage >= 60) return 'text-electric-cyan';
-    return 'text-international-orange';
+    if (percentage >= 80) return 'text-[var(--success)]';
+    if (percentage >= 60) return 'text-[var(--electric-cyan)]';
+    return 'text-[var(--international-orange)]';
   };
   
   return (
@@ -43,25 +43,25 @@ export function SectionCard({ sectionId, sectionTitle, grade, status, index }: S
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1, duration: 0.4 }}
-      className="glass rounded-xl overflow-hidden"
+      className="glass rounded-xl overflow-hidden shadow-soft"
     >
       {/* Header */}
       <button
         onClick={() => status === 'complete' && setIsExpanded(!isExpanded)}
         className={`w-full p-4 flex items-center justify-between ${
-          status === 'complete' ? 'cursor-pointer hover:bg-white/5' : 'cursor-default'
+          status === 'complete' ? 'cursor-pointer hover:bg-[var(--accent-light)]' : 'cursor-default'
         } transition-colors`}
         disabled={status !== 'complete'}
       >
         <div className="flex items-center gap-3">
           {getStatusIcon()}
           <div className="text-left">
-            <h3 className="font-medium text-canvas-white">{sectionTitle}</h3>
+            <h3 className="font-medium text-[var(--foreground)]">{sectionTitle}</h3>
             {status === 'grading' && (
               <ThinkingIndicator message="Analyzing section..." />
             )}
             {status === 'pending' && (
-              <span className="text-xs text-chrome-silver/60">Waiting...</span>
+              <span className="text-xs text-[var(--foreground-muted)]/60">Waiting...</span>
             )}
           </div>
         </div>
@@ -90,9 +90,9 @@ export function SectionCard({ sectionId, sectionTitle, grade, status, index }: S
                 {grade.totalScore}/{grade.totalMax}
               </div>
               {isExpanded ? (
-                <ChevronUp className="w-5 h-5 text-chrome-silver" />
+                <ChevronUp className="w-5 h-5 text-[var(--foreground-muted)]" />
               ) : (
-                <ChevronDown className="w-5 h-5 text-chrome-silver" />
+                <ChevronDown className="w-5 h-5 text-[var(--foreground-muted)]" />
               )}
             </>
           )}
@@ -109,20 +109,20 @@ export function SectionCard({ sectionId, sectionTitle, grade, status, index }: S
             transition={{ duration: 0.3 }}
             className="overflow-hidden"
           >
-            <div className="px-4 pb-4 pt-2 border-t border-white/5">
+            <div className="px-4 pb-4 pt-2 border-t border-[var(--border)]">
               {/* Analysis */}
-              <p className="text-sm text-chrome-silver mb-4">{grade.analysis}</p>
+              <p className="text-sm text-[var(--foreground-muted)] mb-4">{grade.analysis}</p>
               
               {/* Strengths */}
               {grade.strengths.length > 0 && (
                 <div className="mb-3">
-                  <h4 className="text-xs font-semibold text-volt-mint uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-semibold text-[var(--success)] uppercase tracking-wider mb-2">
                     Strengths
                   </h4>
                   <ul className="space-y-1">
                     {grade.strengths.map((strength, i) => (
-                      <li key={i} className="text-sm text-chrome-silver flex items-start gap-2">
-                        <span className="text-volt-mint mt-1">✓</span>
+                      <li key={i} className="text-sm text-[var(--foreground-muted)] flex items-start gap-2">
+                        <span className="text-[var(--success)] mt-1">✓</span>
                         {strength}
                       </li>
                     ))}
@@ -133,13 +133,13 @@ export function SectionCard({ sectionId, sectionTitle, grade, status, index }: S
               {/* Improvements */}
               {grade.improvements.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-international-orange uppercase tracking-wider mb-2">
+                  <h4 className="text-xs font-semibold text-[var(--international-orange)] uppercase tracking-wider mb-2">
                     Areas to Improve
                   </h4>
                   <ul className="space-y-1">
                     {grade.improvements.map((improvement, i) => (
-                      <li key={i} className="text-sm text-chrome-silver flex items-start gap-2">
-                        <span className="text-international-orange mt-1">→</span>
+                      <li key={i} className="text-sm text-[var(--foreground-muted)] flex items-start gap-2">
+                        <span className="text-[var(--international-orange)] mt-1">→</span>
                         {improvement}
                       </li>
                     ))}
@@ -153,4 +153,3 @@ export function SectionCard({ sectionId, sectionTitle, grade, status, index }: S
     </motion.div>
   );
 }
-

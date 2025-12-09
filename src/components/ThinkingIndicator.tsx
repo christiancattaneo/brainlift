@@ -17,7 +17,7 @@ export function ThinkingIndicator({ message = 'Analyzing...' }: ThinkingIndicato
         {[0, 1, 2].map((i) => (
           <motion.div
             key={i}
-            className="w-2 h-2 rounded-full bg-alpha-blue"
+            className="w-2 h-2 rounded-full bg-[var(--alpha-blue)]"
             animate={{
               scale: [0.8, 1, 0.8],
               opacity: [0.5, 1, 0.5],
@@ -31,8 +31,7 @@ export function ThinkingIndicator({ message = 'Analyzing...' }: ThinkingIndicato
           />
         ))}
       </div>
-      <span className="text-sm text-chrome-silver">{message}</span>
+      <span className="text-sm text-[var(--foreground-muted)]">{message}</span>
     </motion.div>
   );
 }
-
