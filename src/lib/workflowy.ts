@@ -20,6 +20,64 @@ export function extractShareId(url: string): string | null {
 }
 
 /**
+ * Flat item from get_tree_data API
+ */
+interface WorkflowyFlatItem {
+  id: string;
+  nm?: string;
+  no?: string;
+  prnt?: string | null;
+  cp?: number;
+}
+
+/**
+ * Reconstruct tree from flat items list
+ */
+function reconstructTree(items: WorkflowyFlatItem[]): WorkflowyNode[] {
+  // Build lookup map
+  const itemMap = new Map<string, WorkflowyNode>();
+  const childrenMap = new Map<string, WorkflowyNode[]>();
+  
+  // First pass: create nodes
+  for (const item of items) {
+    const node: WorkflowyNode = {
+      id: item.id,
+      nm: item.nm,
+      no: item.no,
+      cp: item.cp,
+    };
+    itemMap.set(item.id, node);
+    
+    // Track parent-child relationships
+    const parentId = item.prnt || 'root';
+    if (!childrenMap.has(parentId)) {
+      childrenMap.set(parentId, []);
+    }
+    childrenMap.get(parentId)!.push(node);
+  }
+  
+  // Second pass: attach children
+  for (const [parentId, children] of childrenMap.entries()) {
+    if (parentId !== 'root' && parentId !== 'null') {
+      const parent = itemMap.get(parentId);
+      if (parent) {
+        parent.ch = children;
+      }
+    }
+  }
+  
+  // Find root nodes (null parent) and get their children
+  const rootNodes = childrenMap.get('null') || childrenMap.get('root') || [];
+  
+  // If there's a single root, return its children as the top-level sections
+  if (rootNodes.length === 1 && rootNodes[0].ch) {
+    return rootNodes[0].ch;
+  }
+  
+  return rootNodes;
+}
+
+/**
  * Fetch Workflowy data from shared link using two-step approach:
  * 1. Fetch HTML page to get internal share_id and session cookie
  * 2. Use session cookie to call API and get full data
@@ -72,9 +130,9 @@ export async function fetchWorkflowyData(urlIdentifier: string): Promise<Workflo
   const sessionId = sessionMatch[1];
   console.log(`[Workflowy] Got session cookie`);
   
-  // Step 2: Call API with session cookie to get full data
-  const apiResponse = await fetch(
-    `https://workflowy.com/get_initialization_data?share_id=${internalShareId}&client_version=21&client_version_v2=28&no_root_children=0&include_main_tree=1`,
+  // Use get_tree_data endpoint (more reliable for shared documents)
+  const treeResponse = await fetch(
+    `https://workflowy.com/get_tree_data/?share_id=${internalShareId}`,
     {
       headers: {
         'Accept': 'application/json',
@@ -85,45 +143,29 @@ export async function fetchWorkflowyData(urlIdentifier: string): Promise<Workflo
     }
   );
   
-  if (!apiResponse.ok) {
-    console.log(`[Workflowy] API returned ${apiResponse.status}, trying get_tree_data...`);
-    
-    // Fallback to get_tree_data endpoint
-    const treeResponse = await fetch(
-      `https://workflowy.com/get_tree_data/?share_id=${internalShareId}`,
-      {
-        headers: {
-          'Accept': 'application/json',
-          'Cookie': `sessionid=${sessionId}`,
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-          'Referer': sharedUrl,
-        },
-      }
-    );
-    
-    if (!treeResponse.ok) {
-      throw new Error(`Workflowy API returned ${treeResponse.status}. The link may require authentication.`);
-    }
-    
-    const treeData = await treeResponse.json();
-    if (treeData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
-      return treeData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
-    }
-    
-    throw new Error('Could not extract data from Workflowy API response.');
+  if (!treeResponse.ok) {
+    throw new Error(`Workflowy API returned ${treeResponse.status}. The link may require authentication.`);
   }
   
-  const apiData = await apiResponse.json();
-  console.log(`[Workflowy] API response keys: ${Object.keys(apiData).join(', ')}`);
+  const treeData = await treeResponse.json();
+  console.log(`[Workflowy] API response keys: ${Object.keys(treeData).join(', ')}`);
   
-  // Extract children from the response
-  if (apiData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
-    const children = apiData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
+  // Handle flat items format from get_tree_data
+  if (treeData.items && Array.isArray(treeData.items)) {
+    console.log(`[Workflowy] Found ${treeData.items.length} flat items, reconstructing tree...`);
+    const tree = reconstructTree(treeData.items);
+    console.log(`[Workflowy] Reconstructed ${tree.length} top-level nodes`);
+    return tree;
+  }
+  
+  // Handle projectTreeData format (legacy/alternative)
+  if (treeData.projectTreeData?.mainProjectTreeInfo?.rootProjectChildren) {
+    const children = treeData.projectTreeData.mainProjectTreeInfo.rootProjectChildren;
     console.log(`[Workflowy] Found ${children.length} root children`);
     return children;
   }
   
-  throw new Error('Could not extract Workflowy data from API response.');
+  throw new Error('Could not extract Workflowy data. The document structure is not supported.');
 }
 
 /**

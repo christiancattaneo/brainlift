@@ -468,22 +468,24 @@ export default function Home() {
           {/* Paste Content Input */}
           {inputMode === 'paste' && (
             <div className="space-y-4">
+              <div className="flex items-center justify-between text-sm mb-2">
+                <span className="text-[var(--foreground-muted)]">
+                  Paste your Business Brainlift content below
+                </span>
+                <a
+                  href="https://workflowy.com/s/business-brainlift/rcb5yXOni51HFepm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-[var(--alpha-blue)] hover:underline"
+                >
+                  <FileText className="w-4 h-4" />
+                  View template structure
+                </a>
+              </div>
               <textarea
                 value={pastedContent}
                 onChange={(e) => setPastedContent(e.target.value)}
-                placeholder="Paste your Business Brainlift content here...
-
-Copy all content from your Workflowy document and paste it here. Make sure to include section headers like:
-- Strategic Vision
-- Long-Term Vision
-- Semester Targets
-- 30-Day Gameplan
-- Market and Competitive Analysis
-- Product/Service Description
-- Skills and Resources Needed
-- Financial Projections
-- Risks, Mitigation, and Contingencies
-- Appendix"
+                placeholder="Paste your Workflowy content here..."
                 disabled={appState === 'fetching' || appState === 'grading'}
                 className="w-full h-64 p-4 bg-[var(--input-bg)] border border-[var(--border-strong)] rounded-xl text-[var(--foreground)] placeholder-[var(--foreground-muted)] focus:outline-none focus:border-[var(--alpha-blue)] focus:ring-1 focus:ring-[var(--alpha-blue)] transition-all disabled:opacity-50 resize-none font-mono text-sm"
               />
