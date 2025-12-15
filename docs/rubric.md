@@ -1,123 +1,207 @@
-Root Node: Business Brainlift - [Business Name]
+# Business Brainlift Grading Rubric
 
-1. Executive Summary / Strategic Vision
-(Total for this section: Thoroughness 3 pts; no direct Viability/Executability here—feeds into overall.)
-Business overview (problem, customers).
-Grading Criteria: 1 pt total (Thoroughness). Requirements: Clearly describes problem (0.5 pt) and target customers with specifics (e.g., demographics, pain points; 0.5 pt). Excellent: Detailed, evidence-linked; Poor: Vague or missing.
-UVP (defensibility, scalability).
-Grading Criteria: 1 pt total (Thoroughness). Requirements: Explains unique edge (0.5 pt) and scalability (e.g., moats like IP; 0.5 pt). Excellent: Backed by examples; Poor: Generic.
-Why viable (demand evidence).
-Grading Criteria: 0.5 pt total (Thoroughness). Requirements: Provides market timing/personal fit with 1-2 pieces of evidence (e.g., trends data). Excellent: Specific sources; Poor: No evidence.
-Self-assessment (enterprise proof or kill proposal).
-Grading Criteria: 0.5 pt total (Thoroughness). Requirements: Justifies viability with math/path to value or explicit kill rationale. Excellent: Quantified; Poor: Unsupported opinion.
+## Overview
 
-2. Long-Term Vision (3-Year Plan)
-(Total for this section: Thoroughness 2 pts; no direct Viability/Executability.)
-Year 1 milestones.
-Grading Criteria: 0.5 pt total (Thoroughness). Requirements: Lists 3-5 specific, phased milestones (e.g., launch, traction). Excellent: Tied to AFA timeline; Poor: Too broad.
-Year 2 milestones.
-Grading Criteria: 0.5 pt total (Thoroughness). Requirements: Details scaling steps (e.g., team, expansion). Excellent: Builds on Year 1; Poor: Repetitive.
-Year 3 vision (revenue, market share).
-Grading Criteria: 0.5 pt total (Thoroughness). Requirements: Quantifies size (e.g., $X revenue, Y% share) with assumptions. Excellent: Ambitious yet grounded; Poor: Unrealistic numbers.
-Exit strategy.
-Grading Criteria: 0.5 pt total (Thoroughness). Requirements: Outlines 1-2 paths (e.g., acquisition) with rationale. Excellent: Tied to track assets; Poor: Omitted.
+Students complete a Business Brainlift in Workflowy to validate their business viability. This rubric is used to grade submissions on three dimensions:
 
-3. 4.5-Month Goals (End of School Year Targets)
-(Total for this section: Thoroughness 2 pts; Viability 3 pts—focus on justified ambition.)
-Revenue goal (e.g., $5k; justify).
-Grading Criteria: 1 pt Thoroughness + 1 pt Viability (total 2 pts). Requirements: Bold metric (0.5 Thoroughness) with math/assumptions (0.5 Thoroughness; 1 Viability—e.g., break down sources). Excellent: Case-specific realism; Poor: Arbitrary.
-Milestones.
-Grading Criteria: 0.5 pt Thoroughness + 1 pt Viability (total 1.5 pts). Requirements: 3-4 timed milestones (0.5 Thoroughness; 1 Viability—logical path to revenue). Excellent: Sequential; Poor: Disconnected.
-KPIs.
-Grading Criteria: 0.5 pt Thoroughness + 0.5 pt Viability (total 1 pt). Requirements: 2-3 measurable KPIs (e.g., growth rate). Excellent: Trackable; Poor: Qualitative only.
-Dependencies.
-Grading Criteria: 0 pt (feeds into above)—Requirements: Lists 2-3 (e.g., funding); integrated into milestone grading.
+- **Thoroughness (30 points)**: Depth and completeness of each section
+- **Viability (30 points)**: Proof of real business potential with data-backed claims
+- **Executability (40 points)**: Actionable, realistic plans that teens can execute
 
-4. 30-Day Gameplan
-(Total for this section: Thoroughness 3 pts; Executability 15 pts—heavy emphasis on actionability.)
-Week 1: Foundation.
-Grading Criteria: 0.5 pt Thoroughness + 2 pts Executability (total 2.5 pts). Requirements: 3-5 tasks (0.5 Thoroughness) with timelines/tools (2 Executability—e.g., interviews by Day 3). Excellent: Teen-feasible; Poor: Overambitious.
-Week 2: Build/Launch.
-Grading Criteria: 0.5 pt Thoroughness + 3 pts Executability (total 3.5 pts). Requirements: Step-by-step build (0.5 Thoroughness; 3 Executability—e.g., prototype deadlines). Excellent: Resource-linked; Poor: No contingencies.
-Week 3: Acquire/Test.
-Grading Criteria: 0.5 pt Thoroughness + 3 pts Executability (total 3.5 pts). Requirements: Outreach tactics (0.5 Thoroughness; 3 Executability—e.g., scripts, targets). Excellent: Measurable tests; Poor: Vague channels.
-Week 4: Iterate/Measure.
-Grading Criteria: 0.5 pt Thoroughness + 2 pts Executability (total 2.5 pts). Requirements: Analysis steps (0.5 Thoroughness; 2 Executability—e.g., data review process). Excellent: Pivot-ready; Poor: Static.
-Subcategories:
-Product/Development.
-Grading Criteria: 0.3 pt Thoroughness + 1 pt Executability (total 1.3 pts). Requirements: Tasks/timelines (integrated). Excellent: Specific tools.
-Marketing/Sales.
-Grading Criteria: 0.3 pt Thoroughness + 1 pt Executability (total 1.3 pts). Requirements: Channels/scripts (integrated). Excellent: Targeted.
-Operations/Systems.
-Grading Criteria: 0.2 pt Thoroughness + 1 pt Executability (total 1.2 pts). Requirements: Processes (integrated). Excellent: Automation ideas.
-Financials.
-Grading Criteria: 0.1 pt Thoroughness + 1 pt Executability (total 1.1 pts). Requirements: Budget/targets (integrated). Excellent: Cash flow steps.
-Risks.
-Grading Criteria: 0.1 pt Thoroughness + 1 pt Executability (total 1.1 pts). Requirements: Weekly mitigations (integrated). Excellent: Proactive.
+**Pass Threshold: 80% (80/100 points)**
 
-Execution Tools (e.g., apps like Trello, AFA resources for quick starts).
-Grading Criteria: 0 pt (bonus to above)—Requirements: Lists 2-3; boosts Executability if practical.
+---
 
-5. Market and Competitive Analysis
-(Total for this section: Thoroughness 3 pts; Viability 10 pts—core for proof.)
-Target market.
-Grading Criteria: 1 pt Thoroughness + 3 pts Viability (total 4 pts). Requirements: Size/segments/personas (1 Thoroughness; 3 Viability—quantified TAM). Excellent: Data-sourced; Poor: Assumed.
-Trends/opportunity.
-Grading Criteria: 1 pt Thoroughness + 3 pts Viability (total 4 pts). Requirements: 2-3 trends with sources (1 Thoroughness; 3 Viability—growth potential). Excellent: Relevant to teen builder.
-Competitors.
-Grading Criteria: 0.5 pt Thoroughness + 2 pts Viability (total 2.5 pts). Requirements: 3-5 listed with analysis (0.5 Thoroughness; 2 Viability—differentiation). Excellent: SWOT-style.
-Validation evidence.
-Grading Criteria: 0.5 pt Thoroughness + 2 pts Viability (total 2.5 pts). Requirements: 2-3 proofs (e.g., surveys; 0.5 Thoroughness; 2 Viability—demand signals). Excellent: Quantifiable.
+## Section-by-Section Rubric
 
-6. Product/Service Description
-(Total for this section: Thoroughness 4 pts; no direct Viability/Executability.)
-Features/benefits.
-Grading Criteria: 1 pt total (Thoroughness). Requirements: 4-6 core items with customer benefits. Excellent: User-focused; Poor: Tech-only.
-Roadmap.
-Grading Criteria: 1 pt total (Thoroughness). Requirements: Short vs. long-term steps. Excellent: Timed; Poor: Linear.
-Business model.
-Grading Criteria: 1 pt total (Thoroughness). Requirements: Monetization paths with examples. Excellent: Multi-stream; Poor: Single.
-Stack.
-Grading Criteria: 1 pt total (Thoroughness). Requirements: Tools/suppliers listed. Excellent: Justified choices; Poor: Generic.
+### 1. Business Vision & Strategy (10 points total)
+**Thoroughness: 5 pts | Viability: 5 pts | Executability: 0 pts**
 
-7. Skills and Resources Needed
-(Total for this section: Thoroughness 3 pts; Executability 15 pts—emphasized for teen agency.)
-1-Month needs.
-Grading Criteria: 1 pt Thoroughness + 4 pts Executability (total 5 pts). Requirements: 3-5 skills/resources (1 Thoroughness; 4 Executability—immediate acquisition steps). Excellent: AFA-tied; Poor: Unplanned.
-4.5-Month needs.
-Grading Criteria: 1 pt Thoroughness + 4 pts Executability (total 5 pts). Requirements: Scaling needs (1 Thoroughness; 4 Executability—budgets/timelines). Excellent: Delegation focus.
-Acquisition plan.
-Grading Criteria: 0.5 pt Thoroughness + 4 pts Executability (total 4.5 pts). Requirements: How/when details (0.5 Thoroughness; 4 Executability—actionable methods). Excellent: Resourceful.
-Gaps/risks.
-Grading Criteria: 0.5 pt Thoroughness + 3 pts Executability (total 3.5 pts). Requirements: Mitigation for 2-3 gaps (0.5 Thoroughness; 3 Executability—contingencies). Excellent: Proactive.
+This is the core strategic section combining business overview, model, and viability.
 
-8. Financial Projections
-(Total for this section: Thoroughness 4 pts; Viability 7 pts—math for ambition.)
-Revenue model.
-Grading Criteria: 1 pt Thoroughness + 2 pts Viability (total 3 pts). Requirements: Sources/pricing (1 Thoroughness; 2 Viability—diversified). Excellent: Priced realistically.
-Costs.
-Grading Criteria: 1 pt Thoroughness + 1 pt Viability (total 2 pts). Requirements: Fixed/variable breakdown (1 Thoroughness; 1 Viability—budgeted). Excellent: Detailed.
-Projections.
-Grading Criteria: 1 pt Thoroughness + 2 pts Viability (total 3 pts). Requirements: Monthly cash flow/break-even (1 Thoroughness; 2 Viability—scenarios). Excellent: Spreadsheet-linked.
-Justification.
-Grading Criteria: 1 pt Thoroughness + 2 pts Viability (total 3 pts). Requirements: Assumptions/sensitivity (1 Thoroughness; 2 Viability—risk-adjusted). Excellent: Data-backed.
+#### Business Overview (2 pts Thoroughness)
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| One-Liner Memo | 0.5 T | Clear, compelling single sentence that captures the business |
+| 30-Second Elevator Pitch | 1.5 T | Complete problem/solution/market/value statement |
 
-9. Risks, Mitigation, and Contingencies
-(Total for this section: Thoroughness 3 pts; Viability 10 pts; Executability 10 pts—key for kill check.)
-Top risks.
-Grading Criteria: 1 pt Thoroughness + 3 pts Viability + 2 pts Executability (total 6 pts). Requirements: 3-5 listed (1 Thoroughness; 3 Viability—prioritized; 2 Executability—impact/timelines). Excellent: Quantified.
-Strategies.
-Grading Criteria: 1 pt Thoroughness + 3 pts Viability + 3 pts Executability (total 7 pts). Requirements: Per-risk mitigations (1 Thoroughness; 3 Viability—feasible; 3 Executability—steps). Excellent: Preventive.
-Plans.
-Grading Criteria: 0.5 pt Thoroughness + 2 pts Viability + 3 pts Executability (total 5.5 pts). Requirements: Backup scenarios (0.5 Thoroughness; 2 Viability—alternatives; 3 Executability—triggers). Excellent: Adaptive.
-Kill criteria.
-Grading Criteria: 0.5 pt Thoroughness + 2 pts Viability + 2 pts Executability (total 4.5 pts). Requirements: 2-3 thresholds (e.g., no traction; 0.5 Thoroughness; 2 Viability—viability test; 2 Executability—decision process). Excellent: Measurable.
+#### Strategic Overview (2 pts Thoroughness, 3 pts Viability)
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| What Are You Selling | 0.5 T | Clear product/service description |
+| Who Pays & Why | 0.5 T + 1 V | Specific customer segment with clear value proposition |
+| Problem/Solution | 0.5 T + 1 V | Well-defined problem with logical solution |
+| Business Model | 0.5 T + 0.5 V | Monetization paths with pricing |
+| Business-Founder Fit | Integrated | Why YOU can build this |
+| Growth Model | Integrated | How revenue scales |
 
-10. Appendices / Supporting Evidence
-(Total for this section: Thoroughness 3 pts; no direct Viability/Executability—supports all.)
-Research sources (e.g., URLs to market data).
-Grading Criteria: 1 pt total (Thoroughness). Requirements: 5+ credible links. Excellent: Annotated; Poor: Irrelevant.
-Early artifacts (e.g., prototypes, customer feedback).
-Grading Criteria: 1 pt total (Thoroughness). Requirements: 2-3 items with descriptions. Excellent: Linked files; Poor: Described only.
-Pitch notes (prep for Friday presentation to mentors/Cameron).
-Grading Criteria: 1 pt total (Thoroughness). Requirements: Key talking points/scripts. Excellent: Concise; Poor: Absent.
+#### Why Viable Now (1 pt Thoroughness, 2 pts Viability)
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| Personal Edge | 0.5 T + 0.5 V | Clear founder-market fit |
+| Market Timing | 0.25 T + 0.5 V | Why NOW is the right time |
+| Evidence of Demand | 0.25 T + 0.5 V | Data showing demand exists |
+| Current Traction | 0.5 V bonus | Existing customers/revenue/waitlist |
+
+---
+
+### 2. Market and Competitive Analysis (13 points total)
+**Thoroughness: 3 pts | Viability: 10 pts | Executability: 0 pts**
+
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| Target Market | 1 T + 3 V | Size/segments/personas with quantified TAM/SAM/SOM |
+| Market Trends/Opportunity | 1 T + 3 V | 2-3 trends with credible sources |
+| Competitors | 0.5 T + 2 V | 3-5 listed with strengths/weaknesses/differentiation |
+| Validation Evidence | 0.5 T + 2 V | Surveys, pre-sales, waitlist data |
+
+---
+
+### 3. Semester Targets (5 points total)
+**Thoroughness: 2 pts | Viability: 3 pts | Executability: 0 pts**
+
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| Semester-Long Targets | 0.5 T + 1 V | Revenue/profit goals with math |
+| Key Milestones | 0.5 T + 1 V | 3-4 timed milestones with logical progression |
+| Metrics for Success (KPIs) | 0.5 T + 0.5 V | 3-4 measurable KPIs |
+| Dependencies | 0.5 T + 0.5 V | Resources and partnerships needed |
+
+---
+
+### 4. 30-Day Gameplan (18 points total)
+**Thoroughness: 3 pts | Viability: 0 pts | Executability: 15 pts**
+
+#### 30-Day Targets (0.5 pts T, 2 pts E)
+- 2-3 specific, measurable targets with clear success criteria
+
+#### Weekly Activity Schedule (1.5 pts T, 8 pts E)
+| Week | Points | Criteria |
+|------|--------|----------|
+| Week 1: Foundation | 0.25 T + 2 E | Tasks with deliverables |
+| Week 2: Build/Launch | 0.5 T + 2 E | Step-by-step with deadlines |
+| Week 3: Acquire/Test | 0.5 T + 2 E | Outreach tactics with targets |
+| Week 4: Iterate/Measure | 0.25 T + 2 E | Analysis and iteration steps |
+
+#### Subcategories (1 pt T, 5 pts E)
+| Category | Points | Criteria |
+|----------|--------|----------|
+| Product/Development | 0.2 T + 1 E | Tasks, timelines, tools |
+| Marketing/Sales | 0.2 T + 1 E | Channels, tactics, targets |
+| Operations/Systems | 0.2 T + 1 E | Processes, automation |
+| Financials | 0.2 T + 1 E | Budget, revenue targets |
+| Risks | 0.2 T + 1 E | Weekly mitigations |
+
+**Bonus considerations:**
+- Validation Evidence: Pre-existing proof of demand adds credibility
+- Execution Tools: Listed tools/resources for quick starts
+
+---
+
+### 5. Skills and Resources Needed (18 points total)
+**Thoroughness: 3 pts | Viability: 0 pts | Executability: 15 pts**
+
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| 1-Month Needs | 1 T + 5 E | Skills/resources with specific acquisition plans |
+| Semester-Long Needs | 1 T + 5 E | Scaling needs with budgets/timelines |
+| Acquisition Plan | 0.5 T + 3 E | Week-by-week skill building plan |
+| Gaps and Risks | 0.5 T + 2 E | Identified gaps with mitigation strategies |
+
+---
+
+### 6. Self-Assessment (7 points total)
+**Thoroughness: 2 pts | Viability: 5 pts | Executability: 0 pts**
+
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| Path to Enterprise Value | 1 T + 3 V | Clear math to $1M+ valuation |
+| Kill Criteria | 1 T + 2 V | Specific, measurable thresholds for pivot/kill |
+
+---
+
+### 7. Financial Projections (11 points total)
+**Thoroughness: 4 pts | Viability: 7 pts | Executability: 0 pts**
+
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| Revenue Model | 1 T + 2 V | Sources, pricing strategy, LTV calculation |
+| Cost Structure | 1 T + 1 V | Fixed/variable breakdown with budgets |
+| Projections | 1 T + 2 V | Monthly cash flow, break-even analysis |
+| Justification | 1 T + 2 V | Assumptions, sensitivity analysis, risks |
+
+---
+
+### 8. Risks, Mitigation, and Contingencies (13 points total)
+**Thoroughness: 3 pts | Viability: 0 pts | Executability: 10 pts**
+
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| Top 3-5 Risks | 1 T + 2 E | Prioritized by impact/probability |
+| Mitigation Strategies | 1 T + 3 E | Specific, actionable strategies per risk |
+| Contingency Plans | 0.5 T + 3 E | Backup scenarios with triggers |
+| Kill Criteria | 0.5 T + 2 E | Hard kill, soft pivot, success thresholds |
+
+---
+
+### 9. Appendix (5 points total)
+**Thoroughness: 5 pts | Viability: 0 pts | Executability: 0 pts**
+
+| Component | Points | Criteria |
+|-----------|--------|----------|
+| Research Sources | 2 T | 5+ credible, annotated links |
+| Early Artifacts | 2 T | Prototypes, landing pages, customer feedback, social proof |
+| Pitch Notes | 1 T | Opening hook, proof points, objection handling, specific ask |
+
+---
+
+## Point Distribution Summary
+
+| Section | Thoroughness | Viability | Executability | Total |
+|---------|-------------|-----------|---------------|-------|
+| Business Vision & Strategy | 5 | 5 | 0 | 10 |
+| Market and Competitive Analysis | 3 | 10 | 0 | 13 |
+| Semester Targets | 2 | 3 | 0 | 5 |
+| 30-Day Gameplan | 3 | 0 | 15 | 18 |
+| Skills and Resources Needed | 3 | 0 | 15 | 18 |
+| Self-Assessment | 2 | 5 | 0 | 7 |
+| Financial Projections | 4 | 7 | 0 | 11 |
+| Risks, Mitigation, and Contingencies | 3 | 0 | 10 | 13 |
+| Appendix | 5 | 0 | 0 | 5 |
+| **TOTAL** | **30** | **30** | **40** | **100** |
+
+---
+
+## Grading Guidelines
+
+### Scoring Philosophy
+- Be fair but rigorous - this is about validating real business viability
+- Consider that submitters are ambitious teen founders (14-18 years old)
+- Award partial points where appropriate (e.g., 0.5, 1.5, 2.5)
+- Never exceed maximum points for any category
+- If content is exceptional, award the MAX but never more
+
+### Pass/Fail Thresholds
+- **80%+ (80+ points)**: PASSED - Business plan is viable and thorough
+- **60-79%**: NEEDS WORK - Good foundation but requires iteration
+- **Below 60%**: SIGNIFICANT REVISION NEEDED - Major gaps in viability or execution
+
+### Traction Bonus Points
+Students who demonstrate real progress (not just plans) can earn bonus points:
+
+| Evidence Type | Base Points | Verified Multiplier |
+|--------------|-------------|---------------------|
+| Paying Customers | 10 | 1.5x |
+| Revenue Generated | 15 | 1.5x |
+| Waitlist/Signups | 5 | 1.2x |
+| MVP Built | 8 | 1.3x |
+| Working Prototype | 5 | 1.2x |
+| Partnerships Secured | 7 | 1.4x |
+| LOI/Commitment Signed | 10 | 1.5x |
+| Pre-sales/Deposits | 12 | 1.5x |
+| User Feedback Collected | 4 | 1.2x |
+| Pilot Program Running | 10 | 1.4x |
+| Social Proof/Followers | 3 | 1.1x |
+| Press/Media Coverage | 5 | 1.3x |
+
+*Verified = evidence linked (screenshots, URLs, testimonials with names)*

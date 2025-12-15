@@ -462,7 +462,7 @@ export default function Home() {
                   </>
                 )}
               </button>
-            </div>
+        </div>
           )}
 
           {/* Paste Content Input */}
@@ -474,8 +474,8 @@ export default function Home() {
                 </span>
                 <a
                   href="https://workflowy.com/s/business-brainlift/rcb5yXOni51HFepm"
-                  target="_blank"
-                  rel="noopener noreferrer"
+            target="_blank"
+            rel="noopener noreferrer"
                   className="flex items-center gap-1.5 text-[var(--alpha-blue)] hover:underline"
                 >
                   <FileText className="w-4 h-4" />

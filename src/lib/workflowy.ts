@@ -175,25 +175,41 @@ export function parseTextToSections(text: string): BrainliftSection[] {
   const sections: BrainliftSection[] = [];
   
   const sectionMapping: Record<string, string> = {
-    'strategic vision': 'strategic-vision',
-    'executive summary': 'strategic-vision',
-    'long-term vision': 'long-term-vision',
-    '3-year plan': 'long-term-vision',
-    'semester targets': 'semester-targets',
-    '4.5-month goals': 'semester-targets',
-    '30-day gameplan': '30-day-gameplan',
-    '30 day gameplan': '30-day-gameplan',
+    // Business Vision & Strategy (new combined section)
+    'business vision & strategy': 'business-vision-strategy',
+    'business vision and strategy': 'business-vision-strategy',
+    'business vision': 'business-vision-strategy',
+    'strategic vision': 'business-vision-strategy',
+    'executive summary': 'business-vision-strategy',
+    // Market Analysis
     'market and competitive analysis': 'market-analysis',
     'market analysis': 'market-analysis',
-    'product/service description': 'product-description',
-    'product description': 'product-description',
-    'service description': 'product-description',
+    'competitive analysis': 'market-analysis',
+    // Semester Targets
+    'semester targets': 'semester-targets',
+    '4.5-month goals': 'semester-targets',
+    'semester goals': 'semester-targets',
+    // 30-Day Gameplan
+    '30-day gameplan': '30-day-gameplan',
+    '30 day gameplan': '30-day-gameplan',
+    '30-day plan': '30-day-gameplan',
+    // Skills and Resources
     'skills and resources needed': 'skills-resources',
     'skills and resources': 'skills-resources',
+    'resources needed': 'skills-resources',
+    // Self-Assessment (new standalone section)
+    'self-assessment': 'self-assessment',
+    'self assessment': 'self-assessment',
+    'enterprise value': 'self-assessment',
+    // Financial Projections
     'financial projections': 'financial-projections',
+    'financials': 'financial-projections',
+    // Risks
     'risks, mitigation, and contingencies': 'risks-mitigation',
     'risks and mitigation': 'risks-mitigation',
+    'risks mitigation': 'risks-mitigation',
     'risks': 'risks-mitigation',
+    // Appendix
     'appendix': 'appendix',
     'appendices': 'appendix',
   };
@@ -288,25 +304,41 @@ export function parseToSections(nodes: WorkflowyNode[]): BrainliftSection[] {
   const sections: BrainliftSection[] = [];
   
   const sectionMapping: Record<string, string> = {
-    'strategic vision': 'strategic-vision',
-    'executive summary': 'strategic-vision',
-    'long-term vision': 'long-term-vision',
-    '3-year plan': 'long-term-vision',
-    'semester targets': 'semester-targets',
-    '4.5-month goals': 'semester-targets',
-    '30-day gameplan': '30-day-gameplan',
-    '30 day gameplan': '30-day-gameplan',
+    // Business Vision & Strategy (new combined section)
+    'business vision & strategy': 'business-vision-strategy',
+    'business vision and strategy': 'business-vision-strategy',
+    'business vision': 'business-vision-strategy',
+    'strategic vision': 'business-vision-strategy',
+    'executive summary': 'business-vision-strategy',
+    // Market Analysis
     'market and competitive analysis': 'market-analysis',
     'market analysis': 'market-analysis',
-    'product/service description': 'product-description',
-    'product description': 'product-description',
-    'service description': 'product-description',
+    'competitive analysis': 'market-analysis',
+    // Semester Targets
+    'semester targets': 'semester-targets',
+    '4.5-month goals': 'semester-targets',
+    'semester goals': 'semester-targets',
+    // 30-Day Gameplan
+    '30-day gameplan': '30-day-gameplan',
+    '30 day gameplan': '30-day-gameplan',
+    '30-day plan': '30-day-gameplan',
+    // Skills and Resources
     'skills and resources needed': 'skills-resources',
     'skills and resources': 'skills-resources',
+    'resources needed': 'skills-resources',
+    // Self-Assessment (new standalone section)
+    'self-assessment': 'self-assessment',
+    'self assessment': 'self-assessment',
+    'enterprise value': 'self-assessment',
+    // Financial Projections
     'financial projections': 'financial-projections',
+    'financials': 'financial-projections',
+    // Risks
     'risks, mitigation, and contingencies': 'risks-mitigation',
     'risks and mitigation': 'risks-mitigation',
+    'risks mitigation': 'risks-mitigation',
     'risks': 'risks-mitigation',
+    // Appendix
     'appendix': 'appendix',
     'appendices': 'appendix',
   };
