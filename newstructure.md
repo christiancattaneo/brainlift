@@ -166,11 +166,17 @@ Business Brainlift - StudySync AI
   - Risk: Burnout from solo execution
     - Mitigation: Strict 6-hour focused work blocks, mandatory gym time, weekly AFA peer accountability
 
-# **Self-assessment**
+# Self-Assessment
 
-- Proof of enterprise value potential
+*Proof of enterprise value potential and clear kill criteria.*
+
+- **Proof of enterprise value potential**
   - Path to $1M+ valuation: 5,000 subscribers × $20/month = $100k MRR × 10x SaaS multiple = $1M+ valuation achievable in 18 months
-  - Kill criteria: If <100 paying users after 90 days of active marketing, pivot to B2B school licensing model
+  - Timeline: 18 months to achieve with current growth trajectory
+- **Kill criteria**
+  - Hard kill: <100 paying users after 90 days of active marketing = Pivot to B2B school licensing
+  - Soft pivot: <$2k MRR by Month 3 = Reduce scope, test new positioning
+  - Success threshold: 200+ paying users by Month 3 = Double down, accelerate
 
 # Financial Projections
 
