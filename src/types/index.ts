@@ -65,7 +65,7 @@ export interface SectionGrade {
   emptyFields: EmptyField[]; // Fields that are bolded but have no content
   coherenceIssues: CoherenceIssue[]; // Cross-section inconsistencies (deducted from thoroughness)
   claimVerification?: ClaimVerification; // Track evidence quality of claims
-  status: 'pending' | 'grading' | 'complete' | 'error';
+  status: 'pending' | 'grading' | 'complete' | 'error' | 'missing';
 }
 
 // Traction evidence detected in the submission

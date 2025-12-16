@@ -10,7 +10,7 @@ interface SectionCardProps {
   sectionId: string;
   sectionTitle: string;
   grade?: SectionGrade;
-  status: 'pending' | 'grading' | 'complete' | 'error';
+  status: 'pending' | 'grading' | 'complete' | 'error' | 'missing';
   index: number;
 }
 
@@ -25,6 +25,8 @@ export function SectionCard({ sectionTitle, grade, status, index }: SectionCardP
         return <Clock className="w-5 h-5 text-[var(--alpha-blue)] animate-pulse" />;
       case 'error':
         return <AlertCircle className="w-5 h-5 text-[var(--international-orange)]" />;
+      case 'missing':
+        return <AlertCircle className="w-5 h-5 text-red-500" />;
       default:
         return <div className="w-5 h-5 rounded-full border-2 border-[var(--border-strong)]" />;
     }
@@ -62,6 +64,9 @@ export function SectionCard({ sectionTitle, grade, status, index }: SectionCardP
             )}
             {status === 'pending' && (
               <span className="text-xs text-[var(--foreground-muted)]/60">Waiting...</span>
+            )}
+            {status === 'missing' && (
+              <span className="text-xs text-red-500 font-medium">Section not found in submission - 0 points</span>
             )}
           </div>
         </div>

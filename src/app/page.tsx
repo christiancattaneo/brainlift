@@ -13,7 +13,7 @@ type InputMode = 'url' | 'paste';
 interface SectionStatus {
   sectionId: string;
   sectionTitle: string;
-  status: 'pending' | 'grading' | 'complete' | 'error';
+  status: 'pending' | 'grading' | 'complete' | 'error' | 'missing';
   grade?: SectionGrade;
 }
 
@@ -70,14 +70,15 @@ export default function Home() {
       const fetchedSections: BrainliftSection[] = fetchData.sections;
       setSections(fetchedSections);
 
-      // Initialize section statuses
-      const initialStatuses: SectionStatus[] = SECTIONS_CONFIG
-        .filter(config => fetchedSections.some(fs => fs.id === config.id))
-        .map(config => ({
+      // Initialize section statuses for ALL sections (show missing ones too)
+      const initialStatuses: SectionStatus[] = SECTIONS_CONFIG.map(config => {
+        const found = fetchedSections.some(fs => fs.id === config.id);
+        return {
           sectionId: config.id,
           sectionTitle: config.title,
-          status: 'pending' as const,
-        }));
+          status: found ? 'pending' as const : 'missing' as const,
+        };
+      });
 
       setSectionStatuses(initialStatuses);
       setAppState('grading');

@@ -228,6 +228,44 @@ export async function POST(request: NextRequest) {
           await new Promise(resolve => setTimeout(resolve, 300));
         }
         
+        // Add zero grades for MISSING sections
+        const providedSectionIds = sections.map(s => s.id);
+        for (const config of SECTIONS_CONFIG) {
+          if (!providedSectionIds.includes(config.id)) {
+            // This section was not found in the submission
+            const missingGrade: SectionGrade = {
+              sectionId: config.id,
+              sectionTitle: config.title,
+              thoroughnessScore: 0,
+              thoroughnessMax: config.thoroughnessMax,
+              viabilityScore: 0,
+              viabilityMax: config.viabilityMax,
+              executabilityScore: 0,
+              executabilityMax: config.executabilityMax,
+              totalScore: 0,
+              totalMax: config.thoroughnessMax + config.viabilityMax + config.executabilityMax,
+              analysis: 'This section was not found in your submission. Please ensure you include this section following the template structure.',
+              strengths: [],
+              improvements: [
+                `Add the "${config.title}" section to your Brainlift`,
+                'Follow the template structure for this section'
+              ],
+              emptyFields: [{ fieldName: config.title, expectedContent: 'Complete section required' }],
+              coherenceIssues: [],
+              status: 'complete',
+            };
+            grades.push(missingGrade);
+            
+            // Send complete event for missing section
+            const missingEvent: GradingStreamEvent = {
+              type: 'section_complete',
+              sectionId: config.id,
+              data: missingGrade,
+            };
+            controller.enqueue(encoder.encode(`data: ${JSON.stringify(missingEvent)}\n\n`));
+          }
+        }
+        
         // TRACTION ANALYSIS - Scan for real progress
         const tractionProgressEvent: GradingStreamEvent = {
           type: 'section_progress',
