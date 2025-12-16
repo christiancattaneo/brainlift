@@ -179,6 +179,7 @@ export async function POST(request: NextRequest) {
               improvements: gradeData.improvements || [],
               emptyFields: gradeData.emptyFields || [],
               coherenceIssues: gradeData.coherenceIssues || [],
+              claimVerification: gradeData.claimVerification || { verified: [], plausible: [], questionable: [] },
               status: 'complete',
             };
             

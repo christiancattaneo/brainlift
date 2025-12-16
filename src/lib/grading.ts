@@ -1,5 +1,137 @@
 import { BrainliftSection, SectionGrade, SECTIONS_CONFIG, TractionEvidence, MilestoneBonus, MILESTONE_CONFIG, TRACTION_CONFIG, TractionType, MilestoneType } from '@/types';
 
+/**
+ * YC PRINCIPLES - Embedded wisdom from YC partners for evaluating startups
+ * Source: Paul Graham essays, YC Startup School, partner interviews
+ */
+export const YC_PRINCIPLES = `
+## YC EVALUATION PRINCIPLES
+
+**Founder Evaluation**
+- Do they understand their users deeply? (Pain points, not just demographics)
+- Are they building something they themselves need/understand?
+- Do they have unfair advantages? (Skills, access, domain insight)
+- Do they move fast and learn from feedback?
+
+**Idea Evaluation**
+- Is this a "vitamin" (nice to have) or "painkiller" (must have)?
+- Does it solve a problem people actively seek solutions for?
+- Is there evidence of organic demand? (People finding them, not just ads)
+- Can they start small and expand? (Wedge strategy)
+
+**Market Evaluation**
+- Is the market growing? (Surfing a wave vs. fighting currents)
+- TAM matters less than having a specific, reachable first audience
+- Can they become the default in a niche before expanding?
+
+**Traction Signals**
+- Growth rate > absolute numbers (10% week-over-week is strong)
+- Retention > acquisition (users coming back?)
+- Organic growth signals (word of mouth, referrals)
+- Revenue > users > signups > interest (hierarchy of evidence)
+
+**Execution Markers**
+- Specific next steps that could happen THIS WEEK
+- Clear, measurable milestones with deadlines
+- Honest kill criteria (intellectual honesty is crucial)
+- Resource-awareness (not assuming money/time they don't have)
+`;
+
+/**
+ * BUSINESS FRAMEWORKS - First principles validation
+ */
+export const BUSINESS_FRAMEWORKS = `
+## FIRST PRINCIPLES BUSINESS VALIDATION
+
+**Unit Economics Check**
+- Customer Acquisition Cost (CAC): How much to get one customer?
+- Lifetime Value (LTV): How much does one customer pay over time?
+- LTV > 3x CAC is healthy for sustainability
+- Payback period: How long to recoup acquisition cost?
+
+**Defensibility Analysis (Porter's Five Forces Simplified)**
+- How easy is it to copy this? (Barrier to entry)
+- Are you dependent on one platform/API? (Supplier power)
+- Can customers easily switch? (Switching costs)
+- What else solves this problem? (Substitutes)
+- How crowded is this space? (Competition intensity)
+
+**Product-Market Fit Signals**
+- Users recommend without being asked
+- Users complain when it's down/unavailable
+- Users pay without heavy discounting
+- Organic growth without constant marketing push
+
+**Lean Validation Questions**
+- Is the problem validated with real user research (not assumptions)?
+- Does the solution directly address that specific problem?
+- Are they measuring metrics that actually matter for success?
+- What's the unfair advantage that can't be easily copied?
+`;
+
+/**
+ * TEEN FOUNDER CALIBRATION - Adjust expectations appropriately
+ */
+export const TEEN_CALIBRATION = `
+## TEEN FOUNDER CONTEXT
+
+**Adjust Expectations For:**
+- Time: School, extracurriculars, family obligations (maybe 15-20 hrs/week)
+- Resources: Limited capital, no credit history, parent dependencies
+- Experience: First-time entrepreneurs, learning as they go
+- Legal: Some contracts require adult co-signer, labor restrictions
+
+**What To Reward:**
+- Resourcefulness over resources (creative problem-solving)
+- Speed of learning over existing knowledge
+- Evidence of actual customer contact (even informal conversations)
+- Specific, actionable next steps over perfect strategy
+- Intellectual honesty about risks and gaps
+
+**Red Flags For Teens Specifically:**
+- Plans requiring significant capital they don't have access to
+- Timelines assuming full-time availability (ignoring school)
+- Dependencies on adults delivering (investors, mentors) without backup
+- Overly complex business models that require years of expertise
+- No acknowledgment of skill gaps or learning curve
+`;
+
+/**
+ * EXEMPLAR REFERENCE - Calibration against known-good submission
+ */
+export const EXEMPLAR_SUMMARY = `
+## EXEMPLAR REFERENCE (90+ SCORE CALIBRATION)
+
+A 90+ submission (like "StudySync AI") demonstrates:
+
+**Thoroughness Excellence:**
+- Every bolded field has specific, concrete content (no placeholders)
+- Numbers with math behind them (not just "we'll grow")
+- Specific customer personas with names and details
+- Week-by-week breakdown with daily-level specificity where needed
+
+**Viability Excellence:**
+- Multiple forms of validation (survey data + waitlist + paying users)
+- Clear market sizing with cited sources
+- Competitive analysis that shows genuine differentiation
+- Financial projections with unit economics that work
+
+**Executability Excellence:**
+- 30-day plan is so specific you could hand it to someone else
+- Every week has measurable deliverables
+- Risk mitigations are specific (not generic "we'll figure it out")
+- Kill criteria are honest and measurable
+- Tools and resources are named specifically
+
+**Traction Standouts:**
+- Actual paying customers (not just interested parties)
+- Specific numbers (847 waitlist, 23 paying, $15/month)
+- Links to evidence (MVP, landing page, TikTok)
+- Testimonials from real users
+
+Use this as calibration: Does the current submission approach this level of specificity and evidence?
+`;
+
 export const RUBRIC = `
 # BUSINESS BRAINLIFT GRADING RUBRIC
 
@@ -151,7 +283,15 @@ IMPORTANT: If this section contradicts or misaligns with claims above, DEDUCT fr
   
   return `You are an expert entrepreneurship mentor grading a teen founder's Business Brainlift submission.
 
+${YC_PRINCIPLES}
+
+${BUSINESS_FRAMEWORKS}
+
+${TEEN_CALIBRATION}
+
 ${RUBRIC}
+
+${EXEMPLAR_SUMMARY}
 
 ## YOUR TASK
 Grade the following section: "${section.title}"
@@ -164,34 +304,48 @@ ${contextBlock}
 ## SECTION CONTENT:
 ${section.content}
 
+## GRADING METHODOLOGY
+Apply this multi-lens evaluation:
+
+**1. VC Lens (for Viability):** Would an investor bet on this? Is the market real? Is there defensibility?
+**2. Operator Lens (for Executability):** Can this teen actually execute this plan in the stated timeframe?
+**3. Mentor Lens (for Thoroughness):** Has the student done the thinking? Is the plan complete and coherent?
+
 ## CRITICAL INSTRUCTIONS
 1. NEVER exceed the maximum points for any category
-2. Be fair but rigorous - this is about validating real business viability
-3. Consider that submitters are ambitious teen founders (14-18 years old)
-4. Award partial points where appropriate (e.g., 0.5, 1.5, 2.5)
-5. If the section is exceptional, award the MAX but never more
-6. **CHECK FOR EMPTY FIELDS** - Bolded headers with NO content are INCOMPLETE. Hurts thoroughness.
-7. **CHECK FOR COHERENCE** - If claims here contradict other sections, deduct from Thoroughness and note in coherenceIssues.
+2. Apply YC principles: Is this a painkiller or vitamin? Is there real evidence of demand?
+3. Consider teen context: Adjust for time/resource constraints, but still expect specificity
+4. Calibrate against the exemplar: Does this approach that level of detail and evidence?
+5. Award partial points where appropriate (e.g., 0.5, 1.5, 2.5)
+6. **CHECK FOR EMPTY FIELDS** - Bolded headers with NO content are INCOMPLETE. Heavily penalize thoroughness.
+7. **CHECK FOR COHERENCE** - If claims here contradict other sections, deduct from Thoroughness.
+8. **VERIFY CLAIMS** - Distinguish between verified (with evidence), plausible (reasonable), and questionable (inflated) claims.
 
 ## RESPONSE FORMAT (JSON only, no markdown):
 {
   "thoroughnessScore": <number, max ${config?.thoroughnessMax || 0}>,
   "viabilityScore": <number, max ${config?.viabilityMax || 0}>,
   "executabilityScore": <number, max ${config?.executabilityMax || 0}>,
-  "analysis": "<2-3 sentence overall assessment>",
+  "analysis": "<2-3 sentence overall assessment applying YC/business principles>",
   "strengths": ["<strength 1>", "<strength 2>"],
-  "improvements": ["<specific improvement 1>", "<specific improvement 2>"],
+  "improvements": ["<specific, actionable improvement 1>", "<specific, actionable improvement 2>"],
   "emptyFields": [
     {"fieldName": "<name of empty bolded field>", "expectedContent": "<what should be there>"}
   ],
   "coherenceIssues": [
     {"issue": "<description of contradiction/inconsistency>", "severity": "<high|medium|low>", "deduction": <points deducted from thoroughness>}
-  ]
+  ],
+  "claimVerification": {
+    "verified": ["<claim with evidence>"],
+    "plausible": ["<reasonable but unverified claim>"],
+    "questionable": ["<claim that seems inflated or unrealistic>"]
+  }
 }
 
 Notes:
 - emptyFields should be [] if all bolded fields have content
 - coherenceIssues should be [] if section is consistent with other sections
+- claimVerification helps track evidence quality
 
 Respond with ONLY the JSON object, no additional text.`;
 }
@@ -387,4 +541,198 @@ export function aggregateCoherenceIssues(grades: SectionGrade[]): {
   }
   
   return { totalDeduction, issues: allIssues };
+}
+
+/**
+ * Build a critique prompt for self-verification of grades
+ * This implements "Chain of Verification" - a second pass to catch errors
+ */
+export function buildCritiquePrompt(
+  section: BrainliftSection,
+  initialGrade: SectionGrade,
+  crossSectionClaims?: string
+): string {
+  const config = SECTIONS_CONFIG.find(s => s.id === section.id);
+  
+  return `You are a CRITICAL REVIEWER auditing an AI grading assessment. Your job is to find errors, biases, and oversights.
+
+## INITIAL GRADE GIVEN:
+- Section: ${section.title}
+- Thoroughness: ${initialGrade.thoroughnessScore}/${initialGrade.thoroughnessMax}
+- Viability: ${initialGrade.viabilityScore}/${initialGrade.viabilityMax}
+- Executability: ${initialGrade.executabilityScore}/${initialGrade.executabilityMax}
+- Analysis: ${initialGrade.analysis}
+- Strengths: ${JSON.stringify(initialGrade.strengths)}
+- Improvements: ${JSON.stringify(initialGrade.improvements)}
+
+## SECTION CONTENT:
+${section.content}
+
+${crossSectionClaims ? `## CROSS-SECTION CONTEXT:\n${crossSectionClaims}` : ''}
+
+## YOUR CRITICAL REVIEW TASK
+
+**1. Check for Over-Generosity:**
+- Did the grader give points for vague statements that lack specifics?
+- Did they accept claims without evidence?
+- Were they too lenient on empty or incomplete fields?
+- Did they grade on potential rather than what's actually there?
+
+**2. Check for Over-Harshness:**
+- Did the grader miss genuine strengths?
+- Were they unfair to a teen founder's resource constraints?
+- Did they penalize for things not required by the rubric?
+
+**3. Verify Specific Claims:**
+For each specific number or claim in the submission:
+- Is it backed by evidence/links?
+- Is it realistic for a teen founder?
+- Does it contradict other parts of the plan?
+
+**4. Check Grading Consistency:**
+- Does the score match the analysis? (High praise but low score = error)
+- Are the improvements actionable and specific?
+- Were all rubric criteria actually addressed?
+
+## RESPONSE FORMAT (JSON only):
+{
+  "originalScoreJustified": <true/false>,
+  "recommendedAdjustments": {
+    "thoroughness": <adjustment: -2 to +2>,
+    "viability": <adjustment: -2 to +2>,
+    "executability": <adjustment: -2 to +2>
+  },
+  "critiques": [
+    "<specific issue with the original grading>"
+  ],
+  "missedStrengths": ["<strength the grader overlooked>"],
+  "missedWeaknesses": ["<weakness the grader overlooked>"],
+  "claimAudit": [
+    {"claim": "<specific claim>", "status": "<verified|plausible|questionable|contradicted>", "reason": "<why>"}
+  ],
+  "revisedAnalysis": "<2-3 sentence revised assessment if changes warranted>"
+}
+
+Be rigorous but fair. The goal is accuracy, not harshness.
+Respond with ONLY the JSON object, no additional text.`;
+}
+
+/**
+ * Build a multi-expert lens prompt for deeper analysis
+ */
+export function buildExpertLensPrompt(
+  section: BrainliftSection,
+  lens: 'vc' | 'operator' | 'mentor',
+  crossSectionClaims?: string
+): string {
+  const config = SECTIONS_CONFIG.find(s => s.id === section.id);
+  
+  const lensDescriptions = {
+    vc: {
+      role: 'a YC partner evaluating this for seed funding',
+      focus: 'Market opportunity, defensibility, growth potential, founder-market fit',
+      keyQuestion: 'Would you bet $150k on this team and idea?',
+      scoreWeights: 'Prioritize Viability scoring'
+    },
+    operator: {
+      role: 'a serial entrepreneur who has built 3 successful businesses',
+      focus: 'Realistic timelines, resource requirements, execution bottlenecks, what could go wrong',
+      keyQuestion: 'Can this specific teen actually execute this plan in 30 days with their constraints?',
+      scoreWeights: 'Prioritize Executability scoring'
+    },
+    mentor: {
+      role: 'an experienced startup mentor reviewing a student\'s work',
+      focus: 'Completeness, logical flow, internal consistency, evidence of deep thinking',
+      keyQuestion: 'Does this plan show the student has done genuine strategic thinking?',
+      scoreWeights: 'Prioritize Thoroughness scoring'
+    }
+  };
+  
+  const lensConfig = lensDescriptions[lens];
+  
+  return `You are ${lensConfig.role}.
+
+${RUBRIC}
+
+## YOUR EXPERT LENS
+**Focus:** ${lensConfig.focus}
+**Key Question:** ${lensConfig.keyQuestion}
+**Scoring Priority:** ${lensConfig.scoreWeights}
+
+## SECTION TO EVALUATE: "${section.title}"
+${section.content}
+
+${crossSectionClaims ? `## CONTEXT FROM OTHER SECTIONS:\n${crossSectionClaims}` : ''}
+
+## MAXIMUM SCORES (DO NOT EXCEED):
+- Thoroughness: ${config?.thoroughnessMax || 0} points
+- Viability: ${config?.viabilityMax || 0} points  
+- Executability: ${config?.executabilityMax || 0} points
+
+## YOUR EVALUATION
+From your expert perspective (${lens.toUpperCase()} LENS), evaluate this section.
+
+{
+  "lens": "${lens}",
+  "thoroughnessScore": <number>,
+  "viabilityScore": <number>,
+  "executabilityScore": <number>,
+  "keyInsight": "<most important observation from your expert perspective>",
+  "concerns": ["<concern 1>", "<concern 2>"],
+  "strengths": ["<strength 1>", "<strength 2>"]
+}
+
+Respond with ONLY the JSON object.`;
+}
+
+/**
+ * Synthesize multiple expert lens evaluations into final grade
+ */
+export function buildSynthesisPrompt(
+  section: BrainliftSection,
+  vcGrade: Record<string, unknown>,
+  operatorGrade: Record<string, unknown>,
+  mentorGrade: Record<string, unknown>
+): string {
+  const config = SECTIONS_CONFIG.find(s => s.id === section.id);
+  
+  return `You are synthesizing three expert evaluations into a final grade.
+
+## SECTION: "${section.title}"
+
+## VC PERSPECTIVE:
+${JSON.stringify(vcGrade, null, 2)}
+
+## OPERATOR PERSPECTIVE:
+${JSON.stringify(operatorGrade, null, 2)}
+
+## MENTOR PERSPECTIVE:
+${JSON.stringify(mentorGrade, null, 2)}
+
+## SYNTHESIS RULES:
+1. Where all three agree: High confidence in that score
+2. Where they disagree: Investigate why and choose the most appropriate
+3. Weight scores based on what matters most for this section type:
+   - Strategic sections → Mentor weight higher
+   - Market/Financial sections → VC weight higher
+   - Execution/30-day sections → Operator weight higher
+
+## MAXIMUM SCORES (DO NOT EXCEED):
+- Thoroughness: ${config?.thoroughnessMax || 0}
+- Viability: ${config?.viabilityMax || 0}
+- Executability: ${config?.executabilityMax || 0}
+
+## RESPONSE FORMAT:
+{
+  "finalThoroughnessScore": <number>,
+  "finalViabilityScore": <number>,
+  "finalExecutabilityScore": <number>,
+  "consensusAreas": ["<where experts agreed>"],
+  "divergenceAreas": ["<where experts disagreed and how you resolved>"],
+  "synthesizedAnalysis": "<2-3 sentence balanced assessment>",
+  "topStrengths": ["<strength 1>", "<strength 2>"],
+  "topImprovements": ["<improvement 1>", "<improvement 2>"]
+}
+
+Respond with ONLY the JSON object.`;
 }

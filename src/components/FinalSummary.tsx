@@ -30,6 +30,11 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
     (s.emptyFields || []).map(f => ({ ...f, sectionTitle: s.sectionTitle }))
   );
   
+  // Aggregate claim verification across all sections
+  const allVerifiedClaims = result.sections.flatMap(s => s.claimVerification?.verified || []);
+  const allQuestionableClaims = result.sections.flatMap(s => s.claimVerification?.questionable || []);
+  const hasClaimVerification = allVerifiedClaims.length > 0 || allQuestionableClaims.length > 0;
+  
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -252,6 +257,72 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
                 </p>
               </div>
             ))}
+          </div>
+        </motion.div>
+      )}
+      
+      {/* Claim Verification Summary */}
+      {hasClaimVerification && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="mb-6 p-4 rounded-xl bg-gradient-to-r from-[var(--alpha-blue)]/10 to-transparent border border-[var(--alpha-blue)]/30"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <CheckCircle className="w-5 h-5 text-[var(--alpha-blue)]" />
+            <h3 className="text-lg font-semibold text-[var(--alpha-blue)]">Evidence Quality Analysis</h3>
+          </div>
+          <p className="text-xs text-[var(--foreground-muted)] mb-3">
+            YC-style claim verification: How well are claims backed by evidence?
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Verified Claims */}
+            {allVerifiedClaims.length > 0 && (
+              <div className="p-3 rounded-lg bg-[var(--background)]/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <span className="text-xs font-semibold text-green-500 uppercase tracking-wide">
+                    Verified ({allVerifiedClaims.length})
+                  </span>
+                </div>
+                <ul className="space-y-1">
+                  {allVerifiedClaims.slice(0, 4).map((claim, i) => (
+                    <li key={i} className="text-xs text-[var(--foreground-muted)]">
+                      • {claim}
+                    </li>
+                  ))}
+                  {allVerifiedClaims.length > 4 && (
+                    <li className="text-xs text-[var(--foreground-muted)]/60">
+                      + {allVerifiedClaims.length - 4} more verified claims
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
+            {/* Questionable Claims */}
+            {allQuestionableClaims.length > 0 && (
+              <div className="p-3 rounded-lg bg-[var(--background)]/50">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-amber-500" />
+                  <span className="text-xs font-semibold text-amber-500 uppercase tracking-wide">
+                    Needs Evidence ({allQuestionableClaims.length})
+                  </span>
+                </div>
+                <ul className="space-y-1">
+                  {allQuestionableClaims.slice(0, 4).map((claim, i) => (
+                    <li key={i} className="text-xs text-[var(--foreground-muted)]">
+                      • {claim}
+                    </li>
+                  ))}
+                  {allQuestionableClaims.length > 4 && (
+                    <li className="text-xs text-[var(--foreground-muted)]/60">
+                      + {allQuestionableClaims.length - 4} more claims needing evidence
+                    </li>
+                  )}
+                </ul>
+              </div>
+            )}
           </div>
         </motion.div>
       )}

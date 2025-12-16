@@ -41,6 +41,13 @@ export interface CoherenceIssue {
   deduction: number; // Points already deducted from thoroughness
 }
 
+// Claim verification from multi-pass analysis
+export interface ClaimVerification {
+  verified: string[];    // Claims with evidence (links, data, specifics)
+  plausible: string[];   // Reasonable but unverified claims
+  questionable: string[]; // Claims that seem inflated or unrealistic
+}
+
 export interface SectionGrade {
   sectionId: string;
   sectionTitle: string;
@@ -57,6 +64,7 @@ export interface SectionGrade {
   improvements: string[];
   emptyFields: EmptyField[]; // Fields that are bolded but have no content
   coherenceIssues: CoherenceIssue[]; // Cross-section inconsistencies (deducted from thoroughness)
+  claimVerification?: ClaimVerification; // Track evidence quality of claims
   status: 'pending' | 'grading' | 'complete' | 'error';
 }
 
