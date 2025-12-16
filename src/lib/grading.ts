@@ -4,7 +4,7 @@ export const RUBRIC = `
 # BUSINESS BRAINLIFT GRADING RUBRIC
 
 ## Grading Categories
-- **Thoroughness (30 points total)**: Depth and completeness of each section
+- **Thoroughness & Coherence (30 points total)**: Depth, completeness, AND internal consistency. A thorough plan is complete, specific, AND coherent with all other sections.
 - **Viability (30 points total)**: Proof of real business potential with data-backed claims
 - **Executability (40 points total)**: Actionable, realistic plans that teens can execute
 
@@ -13,6 +13,11 @@ export const RUBRIC = `
 ## CRITICAL INSTRUCTION:
 You MUST NOT exceed the maximum points for any category. Scores are CAPPED at the maximum shown.
 If content deserves more than the max, still award ONLY the max.
+
+## COHERENCE RULE:
+If a section contradicts or is inconsistent with claims made in other sections, DEDUCT from Thoroughness.
+- Major contradiction (different numbers, conflicting claims): -1 to -2 pts from Thoroughness
+- Minor inconsistency (slight misalignment): -0.5 pts from Thoroughness
 
 ## Section-by-Section Rubric:
 
@@ -97,8 +102,52 @@ This is the core strategic section combining business overview, model, and viabi
 - Pitch Notes: 1 pt - Opening hook, proof points, objection handling, specific ask
 `;
 
-export function buildGradingPrompt(section: BrainliftSection): string {
+/**
+ * Extract key claims/metrics from all sections for cross-reference
+ */
+export function buildClaimsExtractionPrompt(fullContent: string): string {
+  return `You are analyzing a Business Brainlift to extract KEY CLAIMS and METRICS that should be consistent across all sections.
+
+## CONTENT:
+${fullContent}
+
+## EXTRACT THE FOLLOWING (if mentioned):
+1. **Revenue targets** - Any revenue/MRR numbers mentioned
+2. **User/customer numbers** - Paying users, waitlist, targets
+3. **Pricing** - Subscription costs, one-time fees
+4. **Timeline milestones** - Key dates/weeks/months for goals
+5. **Costs/budget** - Spending amounts, tool costs
+6. **Target market** - Who they're selling to
+7. **Business model** - How they make money
+8. **Growth targets** - MoM growth, conversion rates
+
+## RESPONSE FORMAT (JSON only):
+{
+  "claims": {
+    "revenue": ["$10k MRR by Month 4", "$5k total revenue"],
+    "users": ["50 users Week 4", "500 subscribers semester end"],
+    "pricing": ["$20/month subscription"],
+    "timeline": ["MVP by Week 2", "50 users by Feb 1"],
+    "costs": ["$2k API credits", "$500/month marketing"],
+    "targetMarket": ["high school AP students", "14-18 year olds"],
+    "businessModel": ["B2C subscription", "premium packs"],
+    "growth": ["30% MoM growth", "85% retention"]
+  }
+}
+
+Only include claims that are EXPLICITLY stated. Use empty arrays [] for categories with no claims.
+Respond with ONLY the JSON object.`;
+}
+
+export function buildGradingPrompt(section: BrainliftSection, crossSectionClaims?: string): string {
   const config = SECTIONS_CONFIG.find(s => s.id === section.id);
+  
+  const contextBlock = crossSectionClaims ? `
+## CROSS-SECTION CONTEXT (Claims from other sections - check for consistency):
+${crossSectionClaims}
+
+IMPORTANT: If this section contradicts or misaligns with claims above, DEDUCT from Thoroughness score and note in coherenceIssues.
+` : '';
   
   return `You are an expert entrepreneurship mentor grading a teen founder's Business Brainlift submission.
 
@@ -108,10 +157,10 @@ ${RUBRIC}
 Grade the following section: "${section.title}"
 
 MAXIMUM points for this section (DO NOT EXCEED):
-- Thoroughness: ${config?.thoroughnessMax || 0} points MAX
+- Thoroughness & Coherence: ${config?.thoroughnessMax || 0} points MAX
 - Viability: ${config?.viabilityMax || 0} points MAX
 - Executability: ${config?.executabilityMax || 0} points MAX
-
+${contextBlock}
 ## SECTION CONTENT:
 ${section.content}
 
@@ -121,7 +170,8 @@ ${section.content}
 3. Consider that submitters are ambitious teen founders (14-18 years old)
 4. Award partial points where appropriate (e.g., 0.5, 1.5, 2.5)
 5. If the section is exceptional, award the MAX but never more
-6. **IMPORTANT: Check for EMPTY FIELDS** - If you see bolded headers/labels (like "**Business-Founder Fit:**" or "**Target 2:**") followed by NO content, these are INCOMPLETE and should be flagged as empty fields. This significantly hurts the thoroughness score.
+6. **CHECK FOR EMPTY FIELDS** - Bolded headers with NO content are INCOMPLETE. Hurts thoroughness.
+7. **CHECK FOR COHERENCE** - If claims here contradict other sections, deduct from Thoroughness and note in coherenceIssues.
 
 ## RESPONSE FORMAT (JSON only, no markdown):
 {
@@ -133,10 +183,15 @@ ${section.content}
   "improvements": ["<specific improvement 1>", "<specific improvement 2>"],
   "emptyFields": [
     {"fieldName": "<name of empty bolded field>", "expectedContent": "<what should be there>"}
+  ],
+  "coherenceIssues": [
+    {"issue": "<description of contradiction/inconsistency>", "severity": "<high|medium|low>", "deduction": <points deducted from thoroughness>}
   ]
 }
 
-Note: emptyFields should be an empty array [] if all bolded fields have content.
+Notes:
+- emptyFields should be [] if all bolded fields have content
+- coherenceIssues should be [] if section is consistent with other sections
 
 Respond with ONLY the JSON object, no additional text.`;
 }
@@ -232,65 +287,21 @@ Respond with ONLY the JSON object, no additional text.`;
 }
 
 /**
- * Build prompt for cross-section consistency analysis
+ * Format extracted claims for inclusion in grading prompts
  */
-export function buildConsistencyAnalysisPrompt(fullContent: string, sectionSummaries: { id: string; title: string; keyPoints: string }[]): string {
-  const summariesText = sectionSummaries.map(s => `### ${s.title}\n${s.keyPoints}`).join('\n\n');
+export function formatClaimsForContext(claims: Record<string, string[]>): string {
+  const lines: string[] = [];
   
-  return `You are an expert business plan reviewer analyzing a Business Brainlift for INTERNAL CONSISTENCY and COHERENCE.
-
-## YOUR TASK
-Analyze whether all sections of this business plan are internally consistent and tell a coherent story. Look for:
-
-1. **CONTRADICTIONS**: Direct conflicts between sections (e.g., different revenue numbers, conflicting target markets)
-2. **INCONSISTENCIES**: Information that doesn't quite match (e.g., financial projections don't align with stated goals)
-3. **NUMBER MISMATCHES**: Figures that should match but don't (e.g., revenue in financials vs semester targets)
-4. **MISSING ALIGNMENT**: Sections that should reference each other but don't (e.g., risks not addressed in mitigation)
-
-## SECTION SUMMARIES:
-${summariesText}
-
-## FULL CONTENT FOR REFERENCE:
-${fullContent}
-
-## WHAT TO CHECK
-- Do revenue projections match across Semester Targets, Financial Projections, and Self-Assessment?
-- Do customer/user numbers stay consistent (waitlist, paying users, targets)?
-- Does the 30-Day Gameplan align with Skills & Resources Needed?
-- Do the risks identified match the contingencies planned?
-- Is the target market consistent across Business Vision and Market Analysis?
-- Do cost projections match budget allocations?
-- Does the timeline make sense across all sections?
-
-## SCORING
-- 100: Perfect coherence, all sections align seamlessly
-- 80-99: Minor inconsistencies that don't undermine the plan
-- 60-79: Notable inconsistencies that need addressing
-- 40-59: Significant contradictions that hurt credibility
-- 0-39: Major contradictions that suggest lack of planning
-
-## PENALTY CALCULATION
-- Each HIGH severity issue: -5 points from base score
-- Each MEDIUM severity issue: -2 points from base score
-- Each LOW severity issue: -1 point from base score
-
-## RESPONSE FORMAT (JSON only, no markdown):
-{
-  "overallCoherence": <number 0-100>,
-  "issues": [
-    {
-      "type": "<contradiction|inconsistency|missing_alignment|number_mismatch>",
-      "severity": "<high|medium|low>",
-      "description": "<specific description of the issue>",
-      "sections": ["<section1>", "<section2>"],
-      "recommendation": "<how to fix this issue>"
-    }
-  ]
-}
-
-Note: issues should be an empty array [] if the plan is fully consistent.
-
-Respond with ONLY the JSON object, no additional text.`;
+  if (claims.revenue?.length) lines.push(`Revenue: ${claims.revenue.join(', ')}`);
+  if (claims.users?.length) lines.push(`Users/Customers: ${claims.users.join(', ')}`);
+  if (claims.pricing?.length) lines.push(`Pricing: ${claims.pricing.join(', ')}`);
+  if (claims.timeline?.length) lines.push(`Timeline: ${claims.timeline.join(', ')}`);
+  if (claims.costs?.length) lines.push(`Costs: ${claims.costs.join(', ')}`);
+  if (claims.targetMarket?.length) lines.push(`Target Market: ${claims.targetMarket.join(', ')}`);
+  if (claims.businessModel?.length) lines.push(`Business Model: ${claims.businessModel.join(', ')}`);
+  if (claims.growth?.length) lines.push(`Growth: ${claims.growth.join(', ')}`);
+  
+  return lines.length > 0 ? lines.join('\n') : 'No cross-section claims extracted.';
 }
 
 /**
@@ -352,25 +363,28 @@ export function calculateMilestoneBonuses(
 }
 
 /**
- * Calculate consistency penalty based on issues found
+ * Aggregate coherence issues from all sections
  */
-export function calculateConsistencyPenalty(issues: { severity: 'high' | 'medium' | 'low' }[]): number {
-  let penalty = 0;
+export function aggregateCoherenceIssues(grades: SectionGrade[]): { 
+  totalDeduction: number; 
+  issues: Array<{ section: string; issue: string; severity: string; deduction: number }> 
+} {
+  const allIssues: Array<{ section: string; issue: string; severity: string; deduction: number }> = [];
+  let totalDeduction = 0;
   
-  for (const issue of issues) {
-    switch (issue.severity) {
-      case 'high':
-        penalty += 5;
-        break;
-      case 'medium':
-        penalty += 2;
-        break;
-      case 'low':
-        penalty += 1;
-        break;
+  for (const grade of grades) {
+    if (grade.coherenceIssues) {
+      for (const ci of grade.coherenceIssues) {
+        allIssues.push({
+          section: grade.sectionTitle,
+          issue: ci.issue,
+          severity: ci.severity,
+          deduction: ci.deduction,
+        });
+        totalDeduction += ci.deduction;
+      }
     }
   }
   
-  // Cap penalty at 20 points max
-  return Math.min(penalty, 20);
+  return { totalDeduction, issues: allIssues };
 }

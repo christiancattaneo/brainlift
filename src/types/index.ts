@@ -34,10 +34,17 @@ export interface EmptyField {
   expectedContent: string;
 }
 
+// Coherence issue detected when comparing section to other sections' claims
+export interface CoherenceIssue {
+  issue: string;
+  severity: 'high' | 'medium' | 'low';
+  deduction: number; // Points already deducted from thoroughness
+}
+
 export interface SectionGrade {
   sectionId: string;
   sectionTitle: string;
-  thoroughnessScore: number;
+  thoroughnessScore: number; // Now includes coherence - "Thoroughness & Coherence"
   thoroughnessMax: number;
   viabilityScore: number;
   viabilityMax: number;
@@ -49,6 +56,7 @@ export interface SectionGrade {
   strengths: string[];
   improvements: string[];
   emptyFields: EmptyField[]; // Fields that are bolded but have no content
+  coherenceIssues: CoherenceIssue[]; // Cross-section inconsistencies (deducted from thoroughness)
   status: 'pending' | 'grading' | 'complete' | 'error';
 }
 
@@ -91,20 +99,11 @@ export type MilestoneType =
   | 'year_1'
   | 'year_2_3';
 
-// Consistency issue between sections
-export interface ConsistencyIssue {
-  type: 'contradiction' | 'inconsistency' | 'missing_alignment' | 'number_mismatch';
-  severity: 'high' | 'medium' | 'low';
-  description: string;
-  sections: string[]; // Which sections are involved
-  recommendation: string;
-}
-
-// Overall consistency analysis
-export interface ConsistencyAnalysis {
-  overallCoherence: number; // 0-100 score
-  issues: ConsistencyIssue[];
-  consistencyPenalty: number; // Points deducted for inconsistencies
+// Aggregated coherence summary (from all section grades)
+export interface CoherenceSummary {
+  totalDeduction: number; // Total points deducted across all sections
+  issueCount: number;
+  issues: Array<{ section: string; issue: string; severity: string; deduction: number }>;
 }
 
 export interface GradingResult {
@@ -119,8 +118,8 @@ export interface GradingResult {
   milestones: MilestoneBonus[];
   bonusScore: number;
   
-  // Consistency analysis
-  consistency: ConsistencyAnalysis;
+  // Coherence summary (aggregated from section coherenceIssues)
+  coherence: CoherenceSummary;
   
   // Combined totals
   totalScore: number;
@@ -136,10 +135,10 @@ export interface GradingResult {
 }
 
 export interface GradingStreamEvent {
-  type: 'section_start' | 'section_progress' | 'section_complete' | 'traction_analysis' | 'consistency_analysis' | 'final_summary' | 'error';
+  type: 'section_start' | 'section_progress' | 'section_complete' | 'claims_extracted' | 'traction_analysis' | 'final_summary' | 'error';
   sectionId?: string;
   sectionTitle?: string;
-  data?: Partial<SectionGrade> | GradingResult | TractionEvidence[] | ConsistencyAnalysis | string;
+  data?: Partial<SectionGrade> | GradingResult | TractionEvidence[] | Record<string, string[]> | string;
   message?: string;
 }
 

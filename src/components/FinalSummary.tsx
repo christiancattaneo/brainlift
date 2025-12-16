@@ -24,7 +24,7 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
   
   const hasTraction = result.traction && result.traction.length > 0;
   const hasBonusScore = result.bonusScore > 0;
-  const hasConsistencyIssues = result.consistency?.issues && result.consistency.issues.length > 0;
+  const hasCoherenceIssues = result.coherence?.issueCount > 0;
   const hasEmptyFields = result.sections.some(s => s.emptyFields && s.emptyFields.length > 0);
   const allEmptyFields = result.sections.flatMap(s => 
     (s.emptyFields || []).map(f => ({ ...f, sectionTitle: s.sectionTitle }))
@@ -206,8 +206,8 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
         </motion.div>
       )}
       
-      {/* Consistency Issues */}
-      {hasConsistencyIssues && (
+      {/* Coherence Issues (from section-level analysis) */}
+      {hasCoherenceIssues && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -217,27 +217,22 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-red-500" />
-              <h3 className="text-lg font-semibold text-red-500">Consistency Issues</h3>
+              <h3 className="text-lg font-semibold text-red-500">Coherence Issues</h3>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-500">
-                -{result.consistency.consistencyPenalty} pts penalty
-              </span>
-              <span className="text-xs text-[var(--foreground-muted)]">
-                Coherence: {result.consistency.overallCoherence}%
-              </span>
-            </div>
+            <span className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-500">
+              {result.coherence.issueCount} issue{result.coherence.issueCount !== 1 ? 's' : ''} • -{result.coherence.totalDeduction} pts from Thoroughness
+            </span>
           </div>
           <p className="text-xs text-[var(--foreground-muted)] mb-3">
-            Cross-section analysis detected inconsistencies that may undermine credibility:
+            Cross-section inconsistencies detected (points already deducted from Thoroughness & Coherence):
           </p>
-          <div className="space-y-3">
-            {result.consistency.issues.map((issue, i) => (
+          <div className="space-y-2">
+            {result.coherence.issues.map((issue, i) => (
               <div
                 key={i}
                 className="p-3 rounded-lg bg-[var(--background)]/50"
               >
-                <div className="flex items-center gap-2 mb-2">
+                <div className="flex items-center gap-2 mb-1">
                   <span className={`text-xs px-2 py-0.5 rounded-full uppercase font-medium ${
                     issue.severity === 'high' 
                       ? 'bg-red-500/20 text-red-500' 
@@ -247,22 +242,13 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
                   }`}>
                     {issue.severity}
                   </span>
-                  <span className="text-xs text-[var(--foreground-muted)] capitalize">
-                    {issue.type.replace(/_/g, ' ')}
+                  <span className="text-xs px-2 py-0.5 rounded bg-[var(--accent-light)] text-[var(--foreground-muted)]">
+                    {issue.section}
                   </span>
+                  <span className="text-xs text-red-500">-{issue.deduction} pts</span>
                 </div>
-                <p className="text-sm text-[var(--foreground)] mb-2">
-                  {issue.description}
-                </p>
-                <div className="flex flex-wrap gap-1 mb-2">
-                  {issue.sections.map((section, j) => (
-                    <span key={j} className="text-xs px-2 py-0.5 rounded bg-[var(--accent-light)] text-[var(--foreground-muted)]">
-                      {section}
-                    </span>
-                  ))}
-                </div>
-                <p className="text-xs text-[var(--electric-cyan)]">
-                  💡 {issue.recommendation}
+                <p className="text-sm text-[var(--foreground)]">
+                  {issue.issue}
                 </p>
               </div>
             ))}
@@ -351,9 +337,8 @@ function generateMarkdown(result: GradingResult): string {
     md += `**Total with Bonus:** ${result.totalScore.toFixed(1)} points (${result.percentage}%)\n\n`;
   }
   
-  if (result.consistency?.consistencyPenalty > 0) {
-    md += `**Consistency Penalty:** -${result.consistency.consistencyPenalty} points\n`;
-    md += `**Coherence Score:** ${result.consistency.overallCoherence}%\n\n`;
+  if (result.coherence?.totalDeduction > 0) {
+    md += `**Coherence Deductions:** -${result.coherence.totalDeduction} pts (from Thoroughness)\n\n`;
   }
   
   md += `**Status:** ${result.passed ? '✅ PASSED' : '❌ NEEDS WORK'}\n\n`;
@@ -377,15 +362,13 @@ function generateMarkdown(result: GradingResult): string {
     md += '\n';
   }
   
-  // Consistency issues
-  if (result.consistency?.issues && result.consistency.issues.length > 0) {
-    md += `## ⚠️ Consistency Issues\n`;
-    md += `Cross-section analysis detected the following issues:\n\n`;
-    result.consistency.issues.forEach((issue, i) => {
-      md += `${i + 1}. **[${issue.severity.toUpperCase()}]** ${issue.type.replace(/_/g, ' ')}\n`;
-      md += `   - ${issue.description}\n`;
-      md += `   - Sections: ${issue.sections.join(', ')}\n`;
-      md += `   - 💡 ${issue.recommendation}\n\n`;
+  // Coherence issues
+  if (result.coherence?.issues && result.coherence.issues.length > 0) {
+    md += `## ⚠️ Coherence Issues\n`;
+    md += `Cross-section inconsistencies (points deducted from Thoroughness):\n\n`;
+    result.coherence.issues.forEach((issue, i) => {
+      md += `${i + 1}. **[${issue.severity.toUpperCase()}]** ${issue.section} (-${issue.deduction} pts)\n`;
+      md += `   - ${issue.issue}\n\n`;
     });
   }
   

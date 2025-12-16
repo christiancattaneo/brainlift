@@ -8,17 +8,17 @@ import {
   TractionEvidence,
   MilestoneType,
   GradingResult,
-  ConsistencyAnalysis,
-  ConsistencyIssue
+  CoherenceSummary
 } from '@/types';
 import { 
   buildGradingPrompt, 
   buildFinalSummaryPrompt, 
   buildTractionAnalysisPrompt,
-  buildConsistencyAnalysisPrompt,
+  buildClaimsExtractionPrompt,
+  formatClaimsForContext,
   calculateTractionBonus,
   calculateMilestoneBonuses,
-  calculateConsistencyPenalty
+  aggregateCoherenceIssues
 } from '@/lib/grading';
 
 const anthropic = new Anthropic({
@@ -45,7 +45,47 @@ export async function POST(request: NextRequest) {
         
         const grades: SectionGrade[] = [];
         
-        // Grade each section
+        // PASS 1: Extract key claims from all sections for cross-reference
+        const claimsProgressEvent: GradingStreamEvent = {
+          type: 'section_progress',
+          message: 'Extracting key claims for cross-section analysis...',
+        };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(claimsProgressEvent)}\n\n`));
+        
+        let crossSectionClaims = '';
+        try {
+          const fullContent = sections.map(s => `## ${s.title}\n${s.content}`).join('\n\n');
+          const claimsPrompt = buildClaimsExtractionPrompt(fullContent);
+          
+          const claimsMessage = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1024,
+            messages: [{ role: 'user', content: claimsPrompt }],
+          });
+          
+          const claimsText = claimsMessage.content[0].type === 'text' ? claimsMessage.content[0].text : '';
+          
+          try {
+            const jsonMatch = claimsText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const claimsData = JSON.parse(jsonMatch[0]);
+              crossSectionClaims = formatClaimsForContext(claimsData.claims || {});
+              
+              // Send claims extracted event
+              const claimsEvent: GradingStreamEvent = {
+                type: 'claims_extracted',
+                data: claimsData.claims,
+              };
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(claimsEvent)}\n\n`));
+            }
+          } catch {
+            console.error('Failed to parse claims data');
+          }
+        } catch (error) {
+          console.error('Error extracting claims:', error);
+        }
+        
+        // PASS 2: Grade each section with cross-section context
         for (const section of sections) {
           const config = SECTIONS_CONFIG.find(s => s.id === section.id);
           if (!config) continue;
@@ -67,7 +107,8 @@ export async function POST(request: NextRequest) {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify(progressEvent)}\n\n`));
           
           try {
-            const prompt = buildGradingPrompt(section);
+            // Pass cross-section claims for coherence checking
+            const prompt = buildGradingPrompt(section, crossSectionClaims);
             
             const message = await anthropic.messages.create({
               model: 'claude-sonnet-4-20250514',
@@ -104,6 +145,7 @@ export async function POST(request: NextRequest) {
                 strengths: [],
                 improvements: ['Please ensure the section follows the template structure'],
                 emptyFields: [],
+                coherenceIssues: [],
               };
             }
             
@@ -136,6 +178,7 @@ export async function POST(request: NextRequest) {
               strengths: gradeData.strengths || [],
               improvements: gradeData.improvements || [],
               emptyFields: gradeData.emptyFields || [],
+              coherenceIssues: gradeData.coherenceIssues || [],
               status: 'complete',
             };
             
@@ -167,6 +210,7 @@ export async function POST(request: NextRequest) {
               strengths: [],
               improvements: ['Please review and resubmit'],
               emptyFields: [],
+              coherenceIssues: [],
               status: 'error',
             };
             grades.push(errorGrade);
@@ -240,72 +284,12 @@ export async function POST(request: NextRequest) {
           console.error('Error analyzing traction:', error);
         }
         
-        // CONSISTENCY ANALYSIS - Check for contradictions and coherence
-        const consistencyProgressEvent: GradingStreamEvent = {
-          type: 'section_progress',
-          message: 'Checking cross-section consistency...',
+        // Aggregate coherence issues from all section grades (already deducted from thoroughness)
+        const coherence: CoherenceSummary = {
+          ...aggregateCoherenceIssues(grades),
+          issueCount: 0,
         };
-        controller.enqueue(encoder.encode(`data: ${JSON.stringify(consistencyProgressEvent)}\n\n`));
-        
-        let consistency: ConsistencyAnalysis = {
-          overallCoherence: 100,
-          issues: [],
-          consistencyPenalty: 0,
-        };
-        
-        try {
-          // Build section summaries for consistency check
-          const fullContent = sections.map(s => `## ${s.title}\n${s.content}`).join('\n\n');
-          const sectionSummaries = grades.map(g => ({
-            id: g.sectionId,
-            title: g.sectionTitle,
-            keyPoints: g.analysis,
-          }));
-          
-          const consistencyPrompt = buildConsistencyAnalysisPrompt(fullContent, sectionSummaries);
-          
-          const consistencyMessage = await anthropic.messages.create({
-            model: 'claude-sonnet-4-20250514',
-            max_tokens: 1500,
-            messages: [
-              {
-                role: 'user',
-                content: consistencyPrompt,
-              },
-            ],
-          });
-          
-          const consistencyText = consistencyMessage.content[0].type === 'text'
-            ? consistencyMessage.content[0].text
-            : '';
-          
-          try {
-            const jsonMatch = consistencyText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              const consistencyData = JSON.parse(jsonMatch[0]);
-              const issues: ConsistencyIssue[] = consistencyData.issues || [];
-              const penalty = calculateConsistencyPenalty(issues);
-              
-              consistency = {
-                overallCoherence: consistencyData.overallCoherence || 100,
-                issues,
-                consistencyPenalty: penalty,
-              };
-            }
-          } catch {
-            console.error('Failed to parse consistency data');
-          }
-          
-          // Send consistency analysis event
-          const consistencyEvent: GradingStreamEvent = {
-            type: 'consistency_analysis',
-            data: consistency,
-          };
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify(consistencyEvent)}\n\n`));
-          
-        } catch (error) {
-          console.error('Error analyzing consistency:', error);
-        }
+        coherence.issueCount = coherence.issues.length;
         
         // Generate final summary
         const summaryProgressEvent: GradingStreamEvent = {
@@ -348,11 +332,11 @@ export async function POST(request: NextRequest) {
           }
           
           // Calculate base score (capped at 100)
-          const rawBaseScore = grades.reduce((sum, g) => sum + g.totalScore, 0);
-          
-          // Apply consistency penalty
-          const adjustedBaseScore = Math.max(0, rawBaseScore - consistency.consistencyPenalty);
-          const baseScore = Math.min(adjustedBaseScore, 100);
+          // Note: Coherence deductions are already applied within each section's thoroughness score
+          const baseScore = Math.min(
+            grades.reduce((sum, g) => sum + g.totalScore, 0),
+            100
+          );
           const baseMaxScore = 100;
           const basePercentage = Math.round((baseScore / baseMaxScore) * 100);
           
@@ -360,7 +344,7 @@ export async function POST(request: NextRequest) {
           const bonusScore = calculateTractionBonus(traction);
           const milestones = calculateMilestoneBonuses(milestoneProgress, traction);
           
-          // Total includes base + bonus (but bonus doesn't offset consistency penalty for pass/fail)
+          // Total includes base + bonus
           const totalScore = baseScore + bonusScore;
           const percentage = Math.round((totalScore / baseMaxScore) * 100);
           
@@ -372,11 +356,11 @@ export async function POST(request: NextRequest) {
             traction,
             milestones,
             bonusScore,
-            consistency,
+            coherence,
             totalScore,
             maxScore: baseMaxScore,
             percentage,
-            passed: basePercentage >= 80, // Pass based on base score only (after consistency penalty)
+            passed: basePercentage >= 80,
             overallAnalysis: summaryData.overallAnalysis,
             topRecommendations: summaryData.topRecommendations,
             timestamp: new Date().toISOString(),
@@ -391,9 +375,10 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           console.error('Error generating summary:', error);
           
-          const rawBaseScore = grades.reduce((sum, g) => sum + g.totalScore, 0);
-          const adjustedBaseScore = Math.max(0, rawBaseScore - consistency.consistencyPenalty);
-          const baseScore = Math.min(adjustedBaseScore, 100);
+          const baseScore = Math.min(
+            grades.reduce((sum, g) => sum + g.totalScore, 0),
+            100
+          );
           const milestones = calculateMilestoneBonuses(milestoneProgress, traction);
           
           const finalResult: GradingResult = {
@@ -404,7 +389,7 @@ export async function POST(request: NextRequest) {
             traction,
             milestones,
             bonusScore: 0,
-            consistency,
+            coherence,
             totalScore: baseScore,
             maxScore: 100,
             percentage: Math.round((baseScore / 100) * 100),

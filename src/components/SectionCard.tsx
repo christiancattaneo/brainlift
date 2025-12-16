@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { SectionGrade } from '@/types';
 import { ThinkingIndicator } from './ThinkingIndicator';
-import { ChevronDown, ChevronUp, CheckCircle, AlertCircle, Clock, FileWarning } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, AlertCircle, Clock, FileWarning, AlertTriangle } from 'lucide-react';
 import { useState } from 'react';
 
 interface SectionCardProps {
@@ -69,6 +69,13 @@ export function SectionCard({ sectionTitle, grade, status, index }: SectionCardP
         <div className="flex items-center gap-4">
           {status === 'complete' && grade && (
             <>
+              {/* Coherence issues badge */}
+              {grade.coherenceIssues && grade.coherenceIssues.length > 0 && (
+                <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-red-500/20 text-red-500">
+                  <AlertTriangle className="w-3 h-3" />
+                  {grade.coherenceIssues.length} inconsistent
+                </span>
+              )}
               {/* Empty fields badge */}
               {grade.emptyFields && grade.emptyFields.length > 0 && (
                 <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">
@@ -131,6 +138,30 @@ export function SectionCard({ sectionTitle, grade, status, index }: SectionCardP
                       <li key={i} className="text-sm text-[var(--foreground-muted)] flex items-start gap-2">
                         <span className="text-[var(--success)] mt-1">✓</span>
                         {strength}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* Coherence Issues */}
+              {grade.coherenceIssues && grade.coherenceIssues.length > 0 && (
+                <div className="mb-3">
+                  <h4 className="text-xs font-semibold text-red-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" />
+                    Coherence Issues (deducted from Thoroughness)
+                  </h4>
+                  <ul className="space-y-1">
+                    {grade.coherenceIssues.map((ci, i) => (
+                      <li key={i} className="text-sm text-[var(--foreground-muted)] flex items-start gap-2 p-2 rounded bg-red-500/10 border border-red-500/20">
+                        <span className={`text-xs px-1.5 py-0.5 rounded uppercase font-medium ${
+                          ci.severity === 'high' ? 'bg-red-500/30 text-red-500' : 
+                          ci.severity === 'medium' ? 'bg-amber-500/30 text-amber-500' : 
+                          'bg-gray-500/30 text-gray-400'
+                        }`}>
+                          -{ci.deduction}
+                        </span>
+                        <span>{ci.issue}</span>
                       </li>
                     ))}
                   </ul>
