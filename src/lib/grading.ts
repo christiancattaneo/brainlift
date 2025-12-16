@@ -460,11 +460,21 @@ export function formatClaimsForContext(claims: Record<string, string[]>): string
 
 /**
  * Calculate bonus points from traction evidence
+ * DEDUPLICATION: Only count each traction type ONCE (take the best instance if verified)
  */
 export function calculateTractionBonus(traction: TractionEvidence[]): number {
-  let bonus = 0;
+  // Dedupe by type - keep best instance (verified > unverified)
+  const bestByType = new Map<TractionType, TractionEvidence>();
   
   for (const t of traction) {
+    const existing = bestByType.get(t.type);
+    if (!existing || (t.verified && !existing.verified)) {
+      bestByType.set(t.type, t);
+    }
+  }
+  
+  let bonus = 0;
+  for (const t of bestByType.values()) {
     const config = TRACTION_CONFIG[t.type];
     if (config) {
       const basePoints = config.basePoints;
