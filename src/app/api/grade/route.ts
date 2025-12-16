@@ -7,14 +7,18 @@ import {
   GradingStreamEvent,
   TractionEvidence,
   MilestoneType,
-  GradingResult
+  GradingResult,
+  ConsistencyAnalysis,
+  ConsistencyIssue
 } from '@/types';
 import { 
   buildGradingPrompt, 
   buildFinalSummaryPrompt, 
   buildTractionAnalysisPrompt,
+  buildConsistencyAnalysisPrompt,
   calculateTractionBonus,
-  calculateMilestoneBonuses
+  calculateMilestoneBonuses,
+  calculateConsistencyPenalty
 } from '@/lib/grading';
 
 const anthropic = new Anthropic({
@@ -99,6 +103,7 @@ export async function POST(request: NextRequest) {
                 analysis: 'Unable to parse section',
                 strengths: [],
                 improvements: ['Please ensure the section follows the template structure'],
+                emptyFields: [],
               };
             }
             
@@ -130,6 +135,7 @@ export async function POST(request: NextRequest) {
               analysis: gradeData.analysis || '',
               strengths: gradeData.strengths || [],
               improvements: gradeData.improvements || [],
+              emptyFields: gradeData.emptyFields || [],
               status: 'complete',
             };
             
@@ -160,6 +166,7 @@ export async function POST(request: NextRequest) {
               analysis: 'Error grading this section',
               strengths: [],
               improvements: ['Please review and resubmit'],
+              emptyFields: [],
               status: 'error',
             };
             grades.push(errorGrade);
@@ -233,6 +240,73 @@ export async function POST(request: NextRequest) {
           console.error('Error analyzing traction:', error);
         }
         
+        // CONSISTENCY ANALYSIS - Check for contradictions and coherence
+        const consistencyProgressEvent: GradingStreamEvent = {
+          type: 'section_progress',
+          message: 'Checking cross-section consistency...',
+        };
+        controller.enqueue(encoder.encode(`data: ${JSON.stringify(consistencyProgressEvent)}\n\n`));
+        
+        let consistency: ConsistencyAnalysis = {
+          overallCoherence: 100,
+          issues: [],
+          consistencyPenalty: 0,
+        };
+        
+        try {
+          // Build section summaries for consistency check
+          const fullContent = sections.map(s => `## ${s.title}\n${s.content}`).join('\n\n');
+          const sectionSummaries = grades.map(g => ({
+            id: g.sectionId,
+            title: g.sectionTitle,
+            keyPoints: g.analysis,
+          }));
+          
+          const consistencyPrompt = buildConsistencyAnalysisPrompt(fullContent, sectionSummaries);
+          
+          const consistencyMessage = await anthropic.messages.create({
+            model: 'claude-sonnet-4-20250514',
+            max_tokens: 1500,
+            messages: [
+              {
+                role: 'user',
+                content: consistencyPrompt,
+              },
+            ],
+          });
+          
+          const consistencyText = consistencyMessage.content[0].type === 'text'
+            ? consistencyMessage.content[0].text
+            : '';
+          
+          try {
+            const jsonMatch = consistencyText.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+              const consistencyData = JSON.parse(jsonMatch[0]);
+              const issues: ConsistencyIssue[] = consistencyData.issues || [];
+              const penalty = calculateConsistencyPenalty(issues);
+              
+              consistency = {
+                overallCoherence: consistencyData.overallCoherence || 100,
+                issues,
+                consistencyPenalty: penalty,
+              };
+            }
+          } catch {
+            console.error('Failed to parse consistency data');
+          }
+          
+          // Send consistency analysis event
+          const consistencyEvent: GradingStreamEvent = {
+            type: 'consistency_analysis',
+            data: consistency,
+          };
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify(consistencyEvent)}\n\n`));
+          
+        } catch (error) {
+          console.error('Error analyzing consistency:', error);
+        }
+        
         // Generate final summary
         const summaryProgressEvent: GradingStreamEvent = {
           type: 'section_progress',
@@ -274,10 +348,11 @@ export async function POST(request: NextRequest) {
           }
           
           // Calculate base score (capped at 100)
-          const baseScore = Math.min(
-            grades.reduce((sum, g) => sum + g.totalScore, 0),
-            100
-          );
+          const rawBaseScore = grades.reduce((sum, g) => sum + g.totalScore, 0);
+          
+          // Apply consistency penalty
+          const adjustedBaseScore = Math.max(0, rawBaseScore - consistency.consistencyPenalty);
+          const baseScore = Math.min(adjustedBaseScore, 100);
           const baseMaxScore = 100;
           const basePercentage = Math.round((baseScore / baseMaxScore) * 100);
           
@@ -285,7 +360,7 @@ export async function POST(request: NextRequest) {
           const bonusScore = calculateTractionBonus(traction);
           const milestones = calculateMilestoneBonuses(milestoneProgress, traction);
           
-          // Total includes base + bonus
+          // Total includes base + bonus (but bonus doesn't offset consistency penalty for pass/fail)
           const totalScore = baseScore + bonusScore;
           const percentage = Math.round((totalScore / baseMaxScore) * 100);
           
@@ -297,10 +372,11 @@ export async function POST(request: NextRequest) {
             traction,
             milestones,
             bonusScore,
+            consistency,
             totalScore,
             maxScore: baseMaxScore,
             percentage,
-            passed: basePercentage >= 80, // Pass based on base score only
+            passed: basePercentage >= 80, // Pass based on base score only (after consistency penalty)
             overallAnalysis: summaryData.overallAnalysis,
             topRecommendations: summaryData.topRecommendations,
             timestamp: new Date().toISOString(),
@@ -315,10 +391,9 @@ export async function POST(request: NextRequest) {
         } catch (error) {
           console.error('Error generating summary:', error);
           
-          const baseScore = Math.min(
-            grades.reduce((sum, g) => sum + g.totalScore, 0),
-            100
-          );
+          const rawBaseScore = grades.reduce((sum, g) => sum + g.totalScore, 0);
+          const adjustedBaseScore = Math.max(0, rawBaseScore - consistency.consistencyPenalty);
+          const baseScore = Math.min(adjustedBaseScore, 100);
           const milestones = calculateMilestoneBonuses(milestoneProgress, traction);
           
           const finalResult: GradingResult = {
@@ -329,6 +404,7 @@ export async function POST(request: NextRequest) {
             traction,
             milestones,
             bonusScore: 0,
+            consistency,
             totalScore: baseScore,
             maxScore: 100,
             percentage: Math.round((baseScore / 100) * 100),

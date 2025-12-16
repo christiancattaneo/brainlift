@@ -121,6 +121,7 @@ ${section.content}
 3. Consider that submitters are ambitious teen founders (14-18 years old)
 4. Award partial points where appropriate (e.g., 0.5, 1.5, 2.5)
 5. If the section is exceptional, award the MAX but never more
+6. **IMPORTANT: Check for EMPTY FIELDS** - If you see bolded headers/labels (like "**Business-Founder Fit:**" or "**Target 2:**") followed by NO content, these are INCOMPLETE and should be flagged as empty fields. This significantly hurts the thoroughness score.
 
 ## RESPONSE FORMAT (JSON only, no markdown):
 {
@@ -129,8 +130,13 @@ ${section.content}
   "executabilityScore": <number, max ${config?.executabilityMax || 0}>,
   "analysis": "<2-3 sentence overall assessment>",
   "strengths": ["<strength 1>", "<strength 2>"],
-  "improvements": ["<specific improvement 1>", "<specific improvement 2>"]
+  "improvements": ["<specific improvement 1>", "<specific improvement 2>"],
+  "emptyFields": [
+    {"fieldName": "<name of empty bolded field>", "expectedContent": "<what should be there>"}
+  ]
 }
+
+Note: emptyFields should be an empty array [] if all bolded fields have content.
 
 Respond with ONLY the JSON object, no additional text.`;
 }
@@ -226,6 +232,68 @@ Respond with ONLY the JSON object, no additional text.`;
 }
 
 /**
+ * Build prompt for cross-section consistency analysis
+ */
+export function buildConsistencyAnalysisPrompt(fullContent: string, sectionSummaries: { id: string; title: string; keyPoints: string }[]): string {
+  const summariesText = sectionSummaries.map(s => `### ${s.title}\n${s.keyPoints}`).join('\n\n');
+  
+  return `You are an expert business plan reviewer analyzing a Business Brainlift for INTERNAL CONSISTENCY and COHERENCE.
+
+## YOUR TASK
+Analyze whether all sections of this business plan are internally consistent and tell a coherent story. Look for:
+
+1. **CONTRADICTIONS**: Direct conflicts between sections (e.g., different revenue numbers, conflicting target markets)
+2. **INCONSISTENCIES**: Information that doesn't quite match (e.g., financial projections don't align with stated goals)
+3. **NUMBER MISMATCHES**: Figures that should match but don't (e.g., revenue in financials vs semester targets)
+4. **MISSING ALIGNMENT**: Sections that should reference each other but don't (e.g., risks not addressed in mitigation)
+
+## SECTION SUMMARIES:
+${summariesText}
+
+## FULL CONTENT FOR REFERENCE:
+${fullContent}
+
+## WHAT TO CHECK
+- Do revenue projections match across Semester Targets, Financial Projections, and Self-Assessment?
+- Do customer/user numbers stay consistent (waitlist, paying users, targets)?
+- Does the 30-Day Gameplan align with Skills & Resources Needed?
+- Do the risks identified match the contingencies planned?
+- Is the target market consistent across Business Vision and Market Analysis?
+- Do cost projections match budget allocations?
+- Does the timeline make sense across all sections?
+
+## SCORING
+- 100: Perfect coherence, all sections align seamlessly
+- 80-99: Minor inconsistencies that don't undermine the plan
+- 60-79: Notable inconsistencies that need addressing
+- 40-59: Significant contradictions that hurt credibility
+- 0-39: Major contradictions that suggest lack of planning
+
+## PENALTY CALCULATION
+- Each HIGH severity issue: -5 points from base score
+- Each MEDIUM severity issue: -2 points from base score
+- Each LOW severity issue: -1 point from base score
+
+## RESPONSE FORMAT (JSON only, no markdown):
+{
+  "overallCoherence": <number 0-100>,
+  "issues": [
+    {
+      "type": "<contradiction|inconsistency|missing_alignment|number_mismatch>",
+      "severity": "<high|medium|low>",
+      "description": "<specific description of the issue>",
+      "sections": ["<section1>", "<section2>"],
+      "recommendation": "<how to fix this issue>"
+    }
+  ]
+}
+
+Note: issues should be an empty array [] if the plan is fully consistent.
+
+Respond with ONLY the JSON object, no additional text.`;
+}
+
+/**
  * Calculate bonus points from traction evidence
  */
 export function calculateTractionBonus(traction: TractionEvidence[]): number {
@@ -281,4 +349,28 @@ export function calculateMilestoneBonuses(
   }
   
   return milestones;
+}
+
+/**
+ * Calculate consistency penalty based on issues found
+ */
+export function calculateConsistencyPenalty(issues: { severity: 'high' | 'medium' | 'low' }[]): number {
+  let penalty = 0;
+  
+  for (const issue of issues) {
+    switch (issue.severity) {
+      case 'high':
+        penalty += 5;
+        break;
+      case 'medium':
+        penalty += 2;
+        break;
+      case 'low':
+        penalty += 1;
+        break;
+    }
+  }
+  
+  // Cap penalty at 20 points max
+  return Math.min(penalty, 20);
 }

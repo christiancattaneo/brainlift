@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion';
 import { GradingResult, TRACTION_CONFIG } from '@/types';
 import { ConcentricRings, RingLegend } from './ConcentricRings';
-import { Download, FileText, Copy, CheckCircle, XCircle, Zap, TrendingUp } from 'lucide-react';
+import { Download, FileText, Copy, CheckCircle, XCircle, Zap, TrendingUp, AlertTriangle, FileWarning } from 'lucide-react';
 import { useState } from 'react';
 
 interface FinalSummaryProps {
@@ -24,6 +24,11 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
   
   const hasTraction = result.traction && result.traction.length > 0;
   const hasBonusScore = result.bonusScore > 0;
+  const hasConsistencyIssues = result.consistency?.issues && result.consistency.issues.length > 0;
+  const hasEmptyFields = result.sections.some(s => s.emptyFields && s.emptyFields.length > 0);
+  const allEmptyFields = result.sections.flatMap(s => 
+    (s.emptyFields || []).map(f => ({ ...f, sectionTitle: s.sectionTitle }))
+  );
   
   return (
     <motion.div
@@ -161,6 +166,110 @@ export function FinalSummary({ result, onExportPDF, onExportMarkdown }: FinalSum
         </motion.div>
       )}
       
+      {/* Empty Fields Warning */}
+      {hasEmptyFields && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className="mb-6 p-4 rounded-xl bg-gradient-to-r from-amber-500/10 to-transparent border border-amber-500/30"
+        >
+          <div className="flex items-center gap-2 mb-3">
+            <FileWarning className="w-5 h-5 text-amber-500" />
+            <h3 className="text-lg font-semibold text-amber-500">Incomplete Sections</h3>
+            <span className="text-xs text-amber-500/70">({allEmptyFields.length} empty field{allEmptyFields.length !== 1 ? 's' : ''})</span>
+          </div>
+          <p className="text-xs text-[var(--foreground-muted)] mb-3">
+            The following bolded fields are expected to have content but were left empty:
+          </p>
+          <div className="space-y-2">
+            {allEmptyFields.map((field, i) => (
+              <div
+                key={i}
+                className="flex items-start gap-3 p-3 rounded-lg bg-[var(--background)]/50"
+              >
+                <div className="w-2 h-2 rounded-full mt-2 bg-amber-500" />
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-[var(--foreground)]">
+                    {field.fieldName}
+                  </div>
+                  <div className="text-xs text-[var(--foreground-muted)]">
+                    In: {field.sectionTitle}
+                  </div>
+                  <div className="text-xs text-amber-500/80 mt-1">
+                    Expected: {field.expectedContent}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+      
+      {/* Consistency Issues */}
+      {hasConsistencyIssues && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          className="mb-6 p-4 rounded-xl bg-gradient-to-r from-red-500/10 to-transparent border border-red-500/30"
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-red-500" />
+              <h3 className="text-lg font-semibold text-red-500">Consistency Issues</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs px-2 py-1 rounded bg-red-500/20 text-red-500">
+                -{result.consistency.consistencyPenalty} pts penalty
+              </span>
+              <span className="text-xs text-[var(--foreground-muted)]">
+                Coherence: {result.consistency.overallCoherence}%
+              </span>
+            </div>
+          </div>
+          <p className="text-xs text-[var(--foreground-muted)] mb-3">
+            Cross-section analysis detected inconsistencies that may undermine credibility:
+          </p>
+          <div className="space-y-3">
+            {result.consistency.issues.map((issue, i) => (
+              <div
+                key={i}
+                className="p-3 rounded-lg bg-[var(--background)]/50"
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full uppercase font-medium ${
+                    issue.severity === 'high' 
+                      ? 'bg-red-500/20 text-red-500' 
+                      : issue.severity === 'medium'
+                        ? 'bg-amber-500/20 text-amber-500'
+                        : 'bg-gray-500/20 text-gray-400'
+                  }`}>
+                    {issue.severity}
+                  </span>
+                  <span className="text-xs text-[var(--foreground-muted)] capitalize">
+                    {issue.type.replace(/_/g, ' ')}
+                  </span>
+                </div>
+                <p className="text-sm text-[var(--foreground)] mb-2">
+                  {issue.description}
+                </p>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {issue.sections.map((section, j) => (
+                    <span key={j} className="text-xs px-2 py-0.5 rounded bg-[var(--accent-light)] text-[var(--foreground-muted)]">
+                      {section}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-xs text-[var(--electric-cyan)]">
+                  💡 {issue.recommendation}
+                </p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      )}
+      
       {/* Overall Analysis */}
       <div className="mb-6">
         <h3 className="text-lg font-semibold text-[var(--foreground)] mb-3">Overall Analysis</h3>
@@ -242,12 +351,43 @@ function generateMarkdown(result: GradingResult): string {
     md += `**Total with Bonus:** ${result.totalScore.toFixed(1)} points (${result.percentage}%)\n\n`;
   }
   
+  if (result.consistency?.consistencyPenalty > 0) {
+    md += `**Consistency Penalty:** -${result.consistency.consistencyPenalty} points\n`;
+    md += `**Coherence Score:** ${result.consistency.overallCoherence}%\n\n`;
+  }
+  
   md += `**Status:** ${result.passed ? '✅ PASSED' : '❌ NEEDS WORK'}\n\n`;
   
   md += `### Score Breakdown\n`;
   md += `- Thoroughness: ${result.sections.reduce((sum, s) => sum + s.thoroughnessScore, 0).toFixed(1)}/30\n`;
   md += `- Viability: ${result.sections.reduce((sum, s) => sum + s.viabilityScore, 0).toFixed(1)}/30\n`;
   md += `- Executability: ${result.sections.reduce((sum, s) => sum + s.executabilityScore, 0).toFixed(1)}/40\n\n`;
+  
+  // Empty fields warning
+  const allEmptyFields = result.sections.flatMap(s => 
+    (s.emptyFields || []).map(f => ({ ...f, sectionTitle: s.sectionTitle }))
+  );
+  if (allEmptyFields.length > 0) {
+    md += `## ⚠️ Incomplete Sections\n`;
+    md += `The following bolded fields were left empty:\n\n`;
+    allEmptyFields.forEach(field => {
+      md += `- **${field.fieldName}** (${field.sectionTitle})\n`;
+      md += `  - Expected: ${field.expectedContent}\n`;
+    });
+    md += '\n';
+  }
+  
+  // Consistency issues
+  if (result.consistency?.issues && result.consistency.issues.length > 0) {
+    md += `## ⚠️ Consistency Issues\n`;
+    md += `Cross-section analysis detected the following issues:\n\n`;
+    result.consistency.issues.forEach((issue, i) => {
+      md += `${i + 1}. **[${issue.severity.toUpperCase()}]** ${issue.type.replace(/_/g, ' ')}\n`;
+      md += `   - ${issue.description}\n`;
+      md += `   - Sections: ${issue.sections.join(', ')}\n`;
+      md += `   - 💡 ${issue.recommendation}\n\n`;
+    });
+  }
   
   // Traction section
   if (result.traction && result.traction.length > 0) {

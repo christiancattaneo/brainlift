@@ -28,6 +28,12 @@ export interface BrainliftSubsection {
   items: string[];
 }
 
+// Empty field detected in a section
+export interface EmptyField {
+  fieldName: string;
+  expectedContent: string;
+}
+
 export interface SectionGrade {
   sectionId: string;
   sectionTitle: string;
@@ -42,6 +48,7 @@ export interface SectionGrade {
   analysis: string;
   strengths: string[];
   improvements: string[];
+  emptyFields: EmptyField[]; // Fields that are bolded but have no content
   status: 'pending' | 'grading' | 'complete' | 'error';
 }
 
@@ -84,6 +91,22 @@ export type MilestoneType =
   | 'year_1'
   | 'year_2_3';
 
+// Consistency issue between sections
+export interface ConsistencyIssue {
+  type: 'contradiction' | 'inconsistency' | 'missing_alignment' | 'number_mismatch';
+  severity: 'high' | 'medium' | 'low';
+  description: string;
+  sections: string[]; // Which sections are involved
+  recommendation: string;
+}
+
+// Overall consistency analysis
+export interface ConsistencyAnalysis {
+  overallCoherence: number; // 0-100 score
+  issues: ConsistencyIssue[];
+  consistencyPenalty: number; // Points deducted for inconsistencies
+}
+
 export interface GradingResult {
   // Base plan score (capped at 100)
   sections: SectionGrade[];
@@ -95,6 +118,9 @@ export interface GradingResult {
   traction: TractionEvidence[];
   milestones: MilestoneBonus[];
   bonusScore: number;
+  
+  // Consistency analysis
+  consistency: ConsistencyAnalysis;
   
   // Combined totals
   totalScore: number;
@@ -110,10 +136,10 @@ export interface GradingResult {
 }
 
 export interface GradingStreamEvent {
-  type: 'section_start' | 'section_progress' | 'section_complete' | 'traction_analysis' | 'final_summary' | 'error';
+  type: 'section_start' | 'section_progress' | 'section_complete' | 'traction_analysis' | 'consistency_analysis' | 'final_summary' | 'error';
   sectionId?: string;
   sectionTitle?: string;
-  data?: Partial<SectionGrade> | GradingResult | TractionEvidence[] | string;
+  data?: Partial<SectionGrade> | GradingResult | TractionEvidence[] | ConsistencyAnalysis | string;
   message?: string;
 }
 

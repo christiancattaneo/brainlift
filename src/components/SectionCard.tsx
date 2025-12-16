@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { SectionGrade } from '@/types';
 import { ThinkingIndicator } from './ThinkingIndicator';
-import { ChevronDown, ChevronUp, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, CheckCircle, AlertCircle, Clock, FileWarning } from 'lucide-react';
 import { useState } from 'react';
 
 interface SectionCardProps {
@@ -69,6 +69,13 @@ export function SectionCard({ sectionTitle, grade, status, index }: SectionCardP
         <div className="flex items-center gap-4">
           {status === 'complete' && grade && (
             <>
+              {/* Empty fields badge */}
+              {grade.emptyFields && grade.emptyFields.length > 0 && (
+                <span className="flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500">
+                  <FileWarning className="w-3 h-3" />
+                  {grade.emptyFields.length} empty
+                </span>
+              )}
               <div className="flex gap-2 text-sm">
                 {grade.thoroughnessMax > 0 && (
                   <span className={getScoreColor(grade.thoroughnessScore, grade.thoroughnessMax)}>
@@ -124,6 +131,27 @@ export function SectionCard({ sectionTitle, grade, status, index }: SectionCardP
                       <li key={i} className="text-sm text-[var(--foreground-muted)] flex items-start gap-2">
                         <span className="text-[var(--success)] mt-1">✓</span>
                         {strength}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              
+              {/* Empty Fields Warning */}
+              {grade.emptyFields && grade.emptyFields.length > 0 && (
+                <div className="mb-3">
+                  <h4 className="text-xs font-semibold text-amber-500 uppercase tracking-wider mb-2 flex items-center gap-1">
+                    <FileWarning className="w-3 h-3" />
+                    Empty Fields
+                  </h4>
+                  <ul className="space-y-1">
+                    {grade.emptyFields.map((field, i) => (
+                      <li key={i} className="text-sm text-[var(--foreground-muted)] flex items-start gap-2 p-2 rounded bg-amber-500/10 border border-amber-500/20">
+                        <span className="text-amber-500 mt-0.5">⚠</span>
+                        <div>
+                          <span className="font-medium">{field.fieldName}</span>
+                          <span className="text-xs block text-amber-500/70">Expected: {field.expectedContent}</span>
+                        </div>
                       </li>
                     ))}
                   </ul>
